@@ -10,7 +10,9 @@ Work has resumed. The [historical operations checkpoint](docs/operations/PAUSE_H
 
 ## Windows one-click startup
 
-After the [one-time Linux/WSL deployment setup](docs/operations/DEPLOYMENT.md#windows-one-click-startup), double-click **start.bat**. It starts the existing persistent control plane, waits for health and trusted HTTPS readiness, then opens the dashboard. The default root is `/srv/homelab-control`; a sole user WSL distribution is detected automatically (otherwise select it as documented). Initial setup still requires Docker/Compose, protected configuration, database provisioning/migration, and trust of your installation's CA. The launcher preserves data and existing security/dispatch settings; it does not initialize or upgrade installations.
+Install **Docker Desktop** with Linux containers enabled, then double-click **start.bat**. First launch builds the real application, creates protected persistent configuration/database volumes, provisions and migrates PostgreSQL, verifies HTTPS, and opens **https://localhost:8443**. The launcher displays the private setup token locally; choose **First time? Set up owner** and create your own account. Later launches reuse your data and owner login. No manually configured WSL distribution or /srv directory is required.
+
+Only loopback HTTPS is exposed. The installation's generated CA is trusted for the current Windows user, authentication stays enabled, and dispatch starts disabled. See [startup details and troubleshooting](docs/operations/DEPLOYMENT.md#windows-one-click-startup), including alternate ports and persistent-volume recovery. Docker Desktop/image-registry prerequisites must be working; readiness failures stop with an error rather than opening a nonworking dashboard.
 
 ## Local development
 

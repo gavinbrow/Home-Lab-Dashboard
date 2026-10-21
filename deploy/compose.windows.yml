@@ -1,0 +1,136 @@
+name: homelab-desktop
+x-runtime: &runtime
+  image: ${HOMELAB_DESKTOP_IMAGE:?Launcher sets image prefix}:api
+  build: {context: .., dockerfile: deploy/Dockerfile, target: runtime}
+  init: true
+  restart: unless-stopped
+  user: "10001:10001"
+  read_only: true
+  cap_drop: [ALL]
+  security_opt: [no-new-privileges:true]
+  tmpfs: ["/tmp:size=128m,mode=1777"]
+  networks: [internal, outbound]
+  environment: &environment
+    NODE_ENV: production
+    HOST: 0.0.0.0
+    PORT: "3000"
+    APP_ORIGIN: https://localhost:${HOMELAB_DESKTOP_PORT:?Launcher sets port}
+    COOKIE_SECURE: "true"
+    ARTIFACT_ROOT: /data/artifacts
+    DISPATCH_ENABLED: "false"
+    RESTORE_MODE: "false"
+  volumes: ["runtime_config:/run/secrets:ro", "artifacts:/data/artifacts"]
+services:
+  initialize:
+    image: ${HOMELAB_DESKTOP_IMAGE}:api
+    user: "0:0"
+    entrypoint: [node, /app/deploy/windows-initialize.cjs]
+    command: [configure]
+    profiles: [tools]
+    network_mode: none
+    read_only: true
+    logging: {driver: none}
+    environment: {INSTALL_PORT: '${HOMELAB_DESKTOP_PORT}'}
+    volumes:
+      - install_state:/state
+      - runtime_config:/runtime
+      - migration_config:/migration
+      - provision_config:/provision
+      - postgres_config:/postgres
+      - artifacts:/artifacts
+      - caddy_data:/caddy-data
+      - caddy_config:/caddy-config
+      - postgres_data:/postgres-data:ro
+  postgres:
+    image: postgres:17.11-bookworm@sha256:3645570cccdfa447589da9f57dd740faa29b30938e861289a5574b6ca6b03826
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: homelab
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres_admin_password
+    volumes: ["postgres_data:/var/lib/postgresql/data", "postgres_config:/run/secrets:ro"]
+    networks: [internal]
+    healthcheck:
+      test: [CMD-SHELL, "pg_isready -U postgres -d homelab"]
+      interval: 3s
+      timeout: 3s
+      retries: 40
+    stop_grace_period: 60s
+  provision:
+    <<: *runtime
+    profiles: [tools]
+    restart: "no"
+    user: "0:0"
+    volumes: !override ["provision_config:/run/secrets:ro"]
+    environment:
+      DATABASE_ADMIN_URL_FILE: /run/secrets/database_admin_url
+      EXPECTED_DATABASE: homelab
+      APP_DB_ROLE: homelab_app
+      APP_DB_PASSWORD_FILE: /run/secrets/app_password
+      MIGRATION_DB_ROLE: homelab_migrator
+      MIGRATION_DB_PASSWORD_FILE: /run/secrets/migration_password
+    command: [npm, run, db:provision]
+  migrate:
+    <<: *runtime
+    profiles: [tools]
+    restart: "no"
+    volumes: !override ["migration_config:/run/secrets:ro"]
+    command: [npm, run, db:migrate]
+  api:
+    <<: *runtime
+    command: [npm, run, start:api]
+    depends_on:
+      postgres: {condition: service_healthy}
+    healthcheck:
+      test: [CMD, node, -e, "fetch('http://127.0.0.1:3000/readyz').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 5s
+      timeout: 5s
+      retries: 24
+      start_period: 20s
+  worker:
+    <<: *runtime
+    image: ${HOMELAB_DESKTOP_IMAGE}:worker
+    build: {context: .., dockerfile: deploy/Dockerfile, target: backup-worker}
+    command: [npm, run, start, --workspace, '@homelab/worker']
+    depends_on:
+      api: {condition: service_healthy}
+    healthcheck:
+      test: [CMD, node, -e, "const fs=require('node:fs');const t=Date.parse(fs.readFileSync('/tmp/homelab-worker-health','utf8'));process.exit(Number.isFinite(t)&&Date.now()-t<30000?0:1)"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 30s
+  proxy:
+    image: ${HOMELAB_DESKTOP_IMAGE}:proxy
+    build: {context: .., dockerfile: deploy/Dockerfile, target: proxy}
+    restart: unless-stopped
+    user: "10001:10001"
+    read_only: true
+    cap_drop: [ALL]
+    cap_add: [NET_BIND_SERVICE]
+    security_opt: [no-new-privileges:true]
+    tmpfs: ["/tmp:size=32m,mode=1777"]
+    environment: {DASHBOARD_HOST: localhost}
+    ports: ["127.0.0.1:${HOMELAB_DESKTOP_PORT}:443"]
+    volumes: ["caddy_data:/data", "caddy_config:/config"]
+    networks: [internal, outbound]
+    depends_on:
+      api: {condition: service_healthy}
+    healthcheck:
+      test: [CMD, caddy, validate, --config, /etc/caddy/Caddyfile]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+networks:
+  internal: {internal: true}
+  outbound: {}
+volumes:
+  install_state: {}
+  runtime_config: {}
+  migration_config: {}
+  provision_config: {}
+  postgres_config: {}
+  postgres_data: {}
+  artifacts: {}
+  caddy_data: {}
+  caddy_config: {}

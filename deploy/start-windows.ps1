@@ -1,61 +1,153 @@
 param(
-    [string]$Root = $env:HOMELAB_CONTROL_ROOT,
-    [string]$Distro = $env:HOMELAB_WSL_DISTRO,
     [string]$Project = $env:HOMELAB_COMPOSE_PROJECT,
+    [int]$Port = 0,
+    [switch]$NoBrowser,
+    [switch]$NoToken,
     [switch]$Check
 )
-
 $ErrorActionPreference = 'Stop'
+Set-Location -LiteralPath (Split-Path $PSScriptRoot -Parent)
+function Docker {
+    $ErrorActionPreference = 'Continue'
+    & docker.exe --context desktop-linux @args
+    if ($LASTEXITCODE -ne 0) { throw "Docker command failed (exit $LASTEXITCODE). Existing volumes/data were preserved." }
+}
+function DockerProbe {
+    $ErrorActionPreference = 'Continue'
+    & docker.exe --context desktop-linux @args 2>$null | Out-Null
+    return ($LASTEXITCODE -eq 0)
+}
+function DockerEngineReady {
+    $ErrorActionPreference = 'Continue'
+    $kind = & docker.exe --context desktop-linux info --format '{{.OSType}}' 2>$null
+    return ($LASTEXITCODE -eq 0 -and ($kind -join '').Trim() -eq 'linux')
+}
+function Compose { Docker compose --project-name $Project -f (Join-Path $PSScriptRoot 'compose.windows.yml') @args }
+$launchLock = $null
+$ownsLock = $false
 try {
-    if (-not (Get-Command wsl.exe -ErrorAction SilentlyContinue)) {
-        throw 'WSL is required. Install WSL with a Linux distribution and Docker Engine/Compose; see docs/operations/DEPLOYMENT.md.'
+    if (-not (Get-Command docker.exe -ErrorAction SilentlyContinue)) { throw 'Install Docker Desktop for Windows, then double-click start.bat again. https://www.docker.com/products/docker-desktop/' }
+    if (-not $Project) { $Project = 'homelab-desktop' }
+    if ($Project -cnotmatch '^[a-z0-9][a-z0-9_-]{0,62}$') { throw 'Project must contain lowercase letters, numbers, underscores or hyphens.' }
+    $launchLock = [Threading.Mutex]::new($false, "Local\HomelabControl-$Project")
+    try { $ownsLock = $launchLock.WaitOne(0) } catch [Threading.AbandonedMutexException] { $ownsLock = $true }
+    if (-not $ownsLock) { throw 'Another launcher is already working on this project. Wait for that window to finish.' }
+    $localRoot = Join-Path $env:LOCALAPPDATA "HomelabControl\$Project"
+    $settingsPath = Join-Path $localRoot 'launcher.json'
+    $settings = $null
+    if (Test-Path -LiteralPath $settingsPath) {
+        $settings = Get-Content -LiteralPath $settingsPath -Raw | ConvertFrom-Json
+        if ($Port -and $Port -ne $settings.port) { throw "This installation uses port $($settings.port). Existing settings were not overwritten." }
+        $Port = [int]$settings.port
     }
-    if (-not $Root) { $Root = '/srv/homelab-control' }
-    if (-not $Project) { $Project = 'homelab-control' }
-    if (-not $Root.StartsWith('/')) { throw 'Root must be an absolute Linux path in WSL.' }
-    if ($Project -cnotmatch '^[a-z0-9][a-z0-9_-]*$') { throw 'Project must be a lowercase Docker Compose project name.' }
-    if (-not $Distro) {
-        $installed = & wsl.exe --list --quiet
-        if ($LASTEXITCODE -ne 0) { throw 'Cannot list WSL distributions. Install/start WSL first.' }
-        $candidates = @($installed | ForEach-Object { ($_ -replace "`0", '').Trim() } | Where-Object { $_ -and $_ -notmatch '^docker-desktop(?:-data)?$' })
-        if ($candidates.Count -ne 1) { throw 'Set HOMELAB_WSL_DISTRO (or -Distro) to the Linux distribution containing your deployment. Exactly one non-Docker WSL distribution could not be selected automatically.' }
-        $Distro = $candidates[0]
+    if (-not $Port) { $Port = 8443 }
+    if ($Port -lt 1024 -or $Port -gt 65535) { throw 'Port must be between 1024 and 65535.' }
+    $env:HOMELAB_DESKTOP_PORT = "$Port"
+    $env:HOMELAB_DESKTOP_IMAGE = "homelab-desktop-$Project"
+    Compose config --quiet
+    if ($Check) { Write-Host 'Windows container launcher/Compose configuration check passed. No services started.'; exit 0 }
+    if (-not (DockerEngineReady)) {
+        $desktop = Join-Path $env:ProgramFiles 'Docker\Docker\Docker Desktop.exe'
+        if (-not (Test-Path -LiteralPath $desktop)) { throw 'Start Docker Desktop using Linux containers, then run start.bat again.' }
+        Write-Host 'Starting Docker Desktop; waiting for the Linux container engine...'
+        Start-Process -FilePath $desktop -WindowStyle Hidden
+        $deadline = (Get-Date).AddMinutes(3)
+        do {
+            Start-Sleep -Seconds 2
+            $engineReady = DockerEngineReady
+            if ($engineReady) { break }
+        } while ((Get-Date) -lt $deadline)
+        if (-not $engineReady) { throw 'Docker Desktop did not become ready. Finish its initial setup and select Linux containers, then retry.' }
     }
-
-    $wslArgs = @('--distribution', $Distro)
-    # The supported installation protects config under Linux root. Containers retain their configured users.
-    $wslArgs += @('--user', 'root', '--exec')
-    $repo = Split-Path $PSScriptRoot -Parent
-    $linuxRepo = & wsl.exe @wslArgs wslpath -a -u $repo
-    if ($LASTEXITCODE -ne 0) { throw 'Cannot access the checkout in WSL. Start/install your distribution, or set HOMELAB_WSL_DISTRO to its name.' }
-    $linuxRepo = ($linuxRepo -join "`n").Trim()
-    if (-not $linuxRepo.StartsWith('/')) { throw 'WSL did not return an absolute checkout path.' }
-    if ($Check) {
-        & wsl.exe @wslArgs bash --noprofile --norc -n "$linuxRepo/deploy/start.sh"
-        if ($LASTEXITCODE -ne 0) { throw 'Linux launcher syntax check failed.' }
-        Write-Host 'Launcher syntax/WSL path check passed. No services started; deployment readiness was not checked.'
-        exit 0
+    if ((Docker info --format '{{.OSType}}') -ne 'linux') { throw 'Switch Docker Desktop to Linux containers, then retry.' }
+    # Never adopt or change permissions on a same-named foreign volume.
+    foreach ($logical in @('install_state','runtime_config','migration_config','provision_config','postgres_config','postgres_data','artifacts','caddy_data','caddy_config')) {
+        $volumeName = "${Project}_$logical"
+        if (DockerProbe volume inspect $volumeName) {
+            $labels = (Docker volume inspect --format '{{json .Labels}}' $volumeName) | ConvertFrom-Json
+            if ($labels.'com.docker.compose.project' -ne $Project -or $labels.'com.docker.compose.volume' -ne $logical) { throw "Volume $volumeName is not owned by this installation. Nothing will be initialized or changed; select a different project or recover the correct original volumes." }
+        }
     }
-
-    Write-Host 'Starting the existing persistent Linux deployment through WSL (root access for protected configuration).'
-    $readyUrl = $null
-    & wsl.exe @wslArgs bash --noprofile --norc "$linuxRepo/deploy/start.sh" $Root $Project | ForEach-Object {
-        if ($_ -match '^HOMELAB_READY_URL=(https://[A-Za-z0-9.-]+)$') { $readyUrl = $Matches[1] }
-        else { Write-Host $_ }
+    $proxyId = Compose ps --all --quiet proxy
+    if (-not $proxyId) {
+        $listener = [Net.Sockets.TcpListener]::new([Net.IPAddress]::Loopback, $Port)
+        try { $listener.Start() } catch { throw "Local port $Port is in use. Nothing was stopped. Use start.bat -Port 8444 (with a new -Project if already configured)." } finally { $listener.Stop() }
     }
-    if ($LASTEXITCODE -ne 0) { throw 'Linux startup failed; no successful readiness result was returned.' }
-    if (-not $readyUrl) { throw 'Startup did not return a verified dashboard URL.' }
-    try {
-        $response = Invoke-WebRequest -Uri "$readyUrl/readyz" -UseBasicParsing -TimeoutSec 15
-        if ($response.StatusCode -ne 200) { throw 'Unexpected readiness status.' }
-    } catch {
-        throw "Containers started, but Windows could not verify $readyUrl/readyz over trusted HTTPS. Check hostname resolution, listener/firewall, and install the verified Caddy CA on this Windows account as described in DEPLOYMENT.md. Services remain running; certificate validation was not bypassed."
+    if (-not $settings) {
+        New-Item -ItemType Directory -Path $localRoot -Force | Out-Null
+        @{ version = 1; project = $Project; port = $Port } | ConvertTo-Json | Set-Content -LiteralPath $settingsPath -Encoding UTF8
     }
-    Write-Host "Ready: $readyUrl"
-    Write-Host 'Use the configured owner login. Your browser must trust the installation CA; never bypass certificate validation.'
-    try { Start-Process $readyUrl } catch { Write-Host "Browser could not open automatically. Open $readyUrl manually." }
+    $missingImage = $false
+    foreach ($target in @('api', 'worker', 'proxy')) {
+        if (-not (DockerProbe image inspect "$($env:HOMELAB_DESKTOP_IMAGE):$target" --format '{{.Id}}')) { $missingImage = $true }
+    }
+    if ($missingImage) {
+        if (DockerProbe volume inspect "${Project}_install_state") {
+            throw 'This project already has persistent installation state but one of its images is missing. Restore the original images or follow the reviewed stop/drain/backup/upgrade procedure before rebuilding; startup will not rebuild an active installation.'
+        }
+        Write-Host 'First launch: building the pinned application containers. This can take several minutes.'
+        Compose build api worker proxy
+    }
+    Compose run --rm -T --no-deps initialize configure
+    $stage = Compose run --rm -T --no-deps initialize status
+    if ($stage -notcontains 'installed') {
+        Write-Host 'Preparing the persistent database and restricted application roles...'
+        Compose up -d --wait --wait-timeout 180 postgres
+        Compose run --rm -T --no-deps provision
+    }
+    # Uses the same installed image as the API; checksum/advisory-lock protected and idempotent.
+    Compose up -d --wait --wait-timeout 180 postgres
+    Compose run --rm -T --no-deps migrate
+    if ($stage -notcontains 'installed') {
+        Compose run --rm -T --no-deps initialize installed
+    }
+    Compose up -d --no-build --wait --wait-timeout 240 postgres api worker proxy
+    $proxyId = Compose ps --quiet proxy
+    $proxyLabels = (Docker inspect --format '{{json .Config.Labels}}' $proxyId) | ConvertFrom-Json
+    if ($proxyLabels.'com.docker.compose.project' -ne $Project -or $proxyLabels.'com.docker.compose.service' -ne 'proxy') { throw 'HTTPS proxy ownership did not match this installation.' }
+    $proxyMounts = (Docker inspect --format '{{json .Mounts}}' $proxyId) | ConvertFrom-Json
+    $caVolume = @($proxyMounts | Where-Object { $_.Destination -eq '/data' -and $_.Type -eq 'volume' })
+    if ($caVolume.Count -ne 1) { throw 'HTTPS CA is not in the expected persistent named volume.' }
+    $volumeLabels = (Docker volume inspect --format '{{json .Labels}}' $caVolume[0].Name) | ConvertFrom-Json
+    if ($volumeLabels.'com.docker.compose.project' -ne $Project -or $volumeLabels.'com.docker.compose.volume' -ne 'caddy_data') { throw 'HTTPS CA volume ownership did not match this installation.' }
+    $certPath = Join-Path $localRoot 'root.crt'
+    Compose cp proxy:/data/caddy/pki/authorities/local/root.crt $certPath
+    $cert = [Security.Cryptography.X509Certificates.X509Certificate2]::new($certPath)
+    $caExtension = $cert.Extensions | Where-Object { $_.Oid.Value -eq '2.5.29.19' }
+    if (-not $caExtension) { throw 'Exported certificate has no CA constraint.' }
+    $constraints = [Security.Cryptography.X509Certificates.X509BasicConstraintsExtension]::new($caExtension, $caExtension.Critical)
+    if (-not $constraints.CertificateAuthority -or $cert.Subject -ne $cert.Issuer -or $cert.NotAfter -lt (Get-Date) -or $cert.NotBefore -gt (Get-Date)) { throw 'Exported installation CA is invalid.' }
+    $trustPath = Join-Path $localRoot 'ca-identity.json'
+    if (Test-Path -LiteralPath $trustPath) {
+        $previousCA = Get-Content -LiteralPath $trustPath -Raw | ConvertFrom-Json
+        if ($previousCA.thumbprint -ne $cert.Thumbprint -or $previousCA.volume -ne $caVolume[0].Name) { throw 'Installation CA identity changed. Review the original persistent CA/data before trusting a replacement.' }
+    }
+    if (-not (Test-Path "Cert:\CurrentUser\Root\$($cert.Thumbprint)")) {
+        Write-Host "Trusting this installation's locally generated HTTPS CA for the current Windows user: $($cert.Thumbprint)"
+        Import-Certificate -FilePath $certPath -CertStoreLocation Cert:\CurrentUser\Root | Out-Null
+    }
+    @{ project = $Project; volume = $caVolume[0].Name; thumbprint = $cert.Thumbprint } | ConvertTo-Json | Set-Content -LiteralPath $trustPath -Encoding UTF8
+    $url = "https://localhost:$Port"
+    $ready = Invoke-WebRequest -UseBasicParsing -Uri "$url/readyz" -TimeoutSec 20
+    if ($ready.StatusCode -ne 200) { throw 'HTTPS readiness did not return 200.' }
+    $auth = Invoke-RestMethod -Uri "$url/api/v1/auth/status" -TimeoutSec 20
+    Write-Host "Ready: $url (production HTTPS; dispatch remains disabled by default)."
+    if ($auth.bootstrap_required) {
+        Write-Host 'In the dashboard choose First time? Set up owner, then enter your own email and a password of at least 12 characters.'
+        if (-not $NoToken) {
+            $token = Compose run --rm -T --no-deps initialize token
+            Write-Host 'Setup token (keep private; available again by rerunning this launcher until owner setup is complete):'
+            Write-Host ($token -join "`n")
+            $token = $null
+        } else { Write-Host 'Setup token suppressed by -NoToken. Normal launch displays it locally until owner setup is complete.' }
+    } else { Write-Host 'Sign in with your existing owner account.' }
+    if (-not $NoBrowser) { Start-Process $url }
     exit 0
 } catch {
     Write-Host "ERROR: $($_.Exception.Message)" -ForegroundColor Red
+    Write-Host 'No persistent data was deleted. Fix the reported prerequisite/error and rerun start.bat to resume.'
     exit 1
+} finally {
+    if ($ownsLock) { $launchLock.ReleaseMutex() }
+    if ($launchLock) { $launchLock.Dispose() }
 }
