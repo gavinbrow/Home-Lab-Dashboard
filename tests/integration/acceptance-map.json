@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "releaseStatus": "BLOCKED",
+  "tests": [
+    {"id":"T01","requirements":["R01","R15"],"milestones":["M02","M14"]},
+    {"id":"T02","requirements":["R08","R17"],"milestones":["M00","M04","M07","M14"]},
+    {"id":"T03","requirements":["R09"],"milestones":["M04","M07","M14"]},
+    {"id":"T04","requirements":["R08","R10","R15"],"milestones":["M08","M14"]},
+    {"id":"T05","requirements":["R08","R11","R15"],"milestones":["M00","M08","M14"]},
+    {"id":"T06","requirements":["R04","R05","R14"],"milestones":["M06","M12","M14"]},
+    {"id":"T07","requirements":["R02","R03","R04","R12","R15"],"milestones":["M03","M10","M14"]},
+    {"id":"T08","requirements":["R02","R06","R07","R14","R17"],"milestones":["M05","M10","M14"]},
+    {"id":"T09","requirements":["R06","R07"],"milestones":["M05","M14"]},
+    {"id":"T10","requirements":["R04","R07","R08","R09"],"milestones":["M05","M14"]},
+    {"id":"T11","requirements":["R06","R07","R15"],"milestones":["M00","M05","M14"]},
+    {"id":"T12","requirements":["R06","R07","R15"],"milestones":["M05","M14"]},
+    {"id":"T13","requirements":["R04","R05","R07","R14","R17"],"milestones":["M06","M10","M14"]},
+    {"id":"T14","requirements":["R05","R14","R15"],"milestones":["M06","M12","M14"]},
+    {"id":"T15","requirements":["R03","R06","R15"],"milestones":["M02","M05","M06","M10","M14"]},
+    {"id":"T16","requirements":["R12","R13","R15"],"milestones":["M09","M14"]},
+    {"id":"T17","requirements":["R12","R13"],"milestones":["M09","M14"]},
+    {"id":"T18","requirements":["R06","R07","R13","R15"],"milestones":["M05","M09","M10","M14"]},
+    {"id":"T19","requirements":["R10","R14","R15"],"milestones":["M11","M14"]},
+    {"id":"T20","requirements":["R09","R17"],"milestones":["M01","M07","M14"]},
+    {"id":"T21","requirements":["R05","R06","R07","R15"],"milestones":["M05","M14"]},
+    {"id":"T22","requirements":["R04","R07","R16","R17"],"milestones":["M13","M14"]},
+    {"id":"T23","requirements":["R01","R04","R07","R14","R16","R17"],"milestones":["M01","M13","M14"]}
+  ]
+}

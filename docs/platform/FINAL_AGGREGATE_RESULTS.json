@@ -1,0 +1,302 @@
+{
+  "schema_version": 1,
+  "status": "STABLE_CANDIDATE_AGGREGATE_PASS_OPTIN_ACCEPTANCE_SEPARATE",
+  "source_cut": "core018-paths-securityopt11",
+  "runtime": {
+    "node": "v22.12.0",
+    "npm": "11.15.0",
+    "typescript": "5.9.3",
+    "postgresql_fixture": "18.4 loopback, disposable uniquely owned databases"
+  },
+  "source_manifest": "docs/integration/source-manifest-core018-paths-securityopt11-prebuild.json",
+  "lock_sha256": "7d49872b961caa7ff8c7b67bbe5c446d0fe996705c4c0937a533283bbf9157a7",
+  "commands": [
+    {
+      "command": "npm run build",
+      "exit_code": 0,
+      "log": "docs/platform/initial-018-build.log",
+      "coverage": "root+web TypeScript and production Vite build",
+      "warning": "Existing large Monaco chunk warning"
+    },
+    {
+      "command": "npm run test --workspace @homelab/web",
+      "exit_code": 0,
+      "tests": 9,
+      "passed": 9,
+      "failed": 0,
+      "skipped": 0,
+      "log": "docs/platform/initial-018-web-test.tap"
+    },
+    {
+      "command": "HOMELAB_LOCAL_PG_URL=<owned loopback PG18.4> MACHINE_TEST_DATABASE_URL=<same> node node_modules/tsx/dist/cli.mjs --test --test-concurrency=4 tests/unit/*.test.ts tests/integration/*.test.ts apps/api/src/modules/*/*.test.ts apps/worker/src/*.test.ts packages/*/test/*.test.ts",
+      "exit_code": 1,
+      "tests": 195,
+      "passed": 177,
+      "failed": 5,
+      "skipped": 13,
+      "elapsed_seconds": 22.41,
+      "log": "docs/platform/initial-node-fixture-failures.tap",
+      "failures": {
+        "actual_failed_subtests": 3,
+        "failed_parent_suites": 2,
+        "details": [
+          "local-postgres missing-adapter fixture rejected400 before expected503",
+          "local-postgres saved-action fixture lacked required dual run_command grant",
+          "worker-postgres unknown-launch fixture lacked original machine generation map"
+        ]
+      },
+      "action": "Validation owner correcting fixtures to current strict authority contract; no production permission relaxation."
+    },
+    {
+      "command": "HOMELAB_LOCAL_PG_URL=<owned loopback PG18.4> MACHINE_TEST_DATABASE_URL=<same> node node_modules/tsx/dist/cli.mjs --test --test-concurrency=4 tests/unit/*.test.ts tests/integration/*.test.ts apps/api/src/modules/*/*.test.ts apps/worker/src/*.test.ts packages/*/test/*.test.ts",
+      "exit_code": 0,
+      "tests": 195,
+      "passed": 182,
+      "failed": 0,
+      "skipped": 13,
+      "log": "docs/platform/candidate401-node-test.tap"
+    },
+    {
+      "command": "npm run build",
+      "exit_code": 0,
+      "coverage": "root+web TypeScript and Vite production build",
+      "vite_seconds": 14.1,
+      "log": "docs/platform/candidate401-build.log"
+    },
+    {
+      "command": "npm run test --workspace @homelab/web",
+      "exit_code": 0,
+      "tests": 9,
+      "passed": 9,
+      "failed": 0,
+      "skipped": 0,
+      "log": "docs/platform/candidate401-web-test.tap"
+    },
+    {
+      "command": "HOMELAB_LOCAL_PG_URL=<owned loopback PG18.4> MACHINE_TEST_DATABASE_URL=<same> node node_modules/tsx/dist/cli.mjs --test --test-concurrency=4 tests/unit/*.test.ts tests/integration/*.test.ts apps/api/src/modules/*/*.test.ts apps/worker/src/*.test.ts packages/*/test/*.test.ts",
+      "exit_code": 0,
+      "tests": 196,
+      "passed": 183,
+      "failed": 0,
+      "skipped": 13,
+      "log": "docs/platform/candidate402-node-test.tap"
+    },
+    {
+      "command": "npm run build",
+      "exit_code": 0,
+      "coverage": "root+web TypeScript and Vite production build",
+      "vite_seconds": 15.39,
+      "log": "docs/platform/candidate402-build.log"
+    },
+    {
+      "command": "npm run test --workspace @homelab/web",
+      "exit_code": 0,
+      "tests": 9,
+      "passed": 9,
+      "failed": 0,
+      "skipped": 0,
+      "log": "docs/platform/candidate402-web-test.tap"
+    },
+    {
+      "command": "HOMELAB_LOCAL_PG_URL=<owned loopback PG18.4> MACHINE_TEST_DATABASE_URL=<same> node node_modules/tsx/dist/cli.mjs --test --test-concurrency=4 tests/unit/*.test.ts tests/integration/*.test.ts apps/api/src/modules/*/*.test.ts apps/worker/src/*.test.ts packages/*/test/*.test.ts",
+      "exit_code": 0,
+      "tests": 204,
+      "passed": 188,
+      "failed": 0,
+      "skipped": 16,
+      "log": "docs/platform/final-node-test.tap"
+    },
+    {
+      "command": "npm run build",
+      "exit_code": 0,
+      "coverage": "root+web TypeScript and production Vite build",
+      "vite_seconds": 13.35,
+      "log": "docs/platform/final-build.log"
+    },
+    {
+      "command": "npm run test --workspace @homelab/web",
+      "exit_code": 0,
+      "tests": 9,
+      "passed": 9,
+      "failed": 0,
+      "skipped": 0,
+      "log": "docs/platform/final-web-test.tap"
+    }
+  ],
+  "note": "408-file source cut aggregate passed. Staged images were built and audited separately; deployment remains lifecycle-budget-host10 until booked writers END. Separate actual T08/PTY/T13 acceptance is not implied.",
+  "updated_at": "2026-10-21T06:22:26.546709+00:00",
+  "skipped_cases": [
+    {
+      "test": "actual Linux Docker saved action: authenticated HTTP -> durable worker -> signed mTLS Go helper -> verified restart",
+      "prerequisite": "Requires explicitly owned NEW homelab-validation-wave2 stack"
+    },
+    {
+      "test": "actual restricted Linux saved command and disposable transient systemd control retain scoped verification/diff evidence",
+      "prerequisite": "Requires explicitly owned refreshed validation stack and existing nobody account"
+    },
+    {
+      "test": "actual OpenSSH Linux chroot fixture: root marker, outside-canary denial and exclusive hash round trip",
+      "prerequisite": "Opt in only on isolated homelab-ops-wave2 fixture network"
+    },
+    {
+      "test": "actual authenticated API and signed Go mTLS accept genuine Windows partial restore and release only the reviewed writer",
+      "prerequisite": "Explicit owned Windows Go executable and disposable loopback PostgreSQL required"
+    },
+    {
+      "test": "actual booked Linux T13 restart/replacement preserves original text, binary and existing retained artifact URLs",
+      "prerequisite": "Requires explicit exclusive retained 3019 fixture booking"
+    },
+    {
+      "test": "actual fresh T13 fixture preserves copied verified text/binary and retained URLs across restart and runtime replacement",
+      "prerequisite": "Requires root-authorized exclusive fresh fixture booking and exact helper11"
+    },
+    {
+      "test": "actual qwen3:4b autonomous180s command verifies and retains both real outputs",
+      "prerequisite": "Requires booked actual4B provider, allocated API3459, browser campaign and immutable worker image"
+    },
+    {
+      "test": "persisted agent through actual signed Go relay: explicit deterministic provider fixture",
+      "prerequisite": "Explicit owned PostgreSQL and built Go executable required"
+    },
+    {
+      "test": "authenticated command cancellation confirms actual container and descendant exit",
+      "prerequisite": "Requires exclusive writer booking on the owned actual UI host fixture"
+    },
+    {
+      "test": "actual local Go executable: collector and rooted file bytes, conflicts and escape denials",
+      "prerequisite": "Opt in with explicitly built HOMELAB_AGENT_EXE; never starts arbitrary native shell"
+    },
+    {
+      "test": "actual Go + native TLS + PostgreSQL: enrolled collector, durable sequence and certificate revocation",
+      "prerequisite": "Explicit disposable PostgreSQL and built Go executable required"
+    },
+    {
+      "test": "actual signed Go 17MiB resumable binary transfer and staged selected checkpoint restore",
+      "prerequisite": "Requires coordinated live owned UI/Go fixture; never creates or guesses a host"
+    },
+    {
+      "test": "actual model Linux 180-second sentinel survives worker/control-plane loss without execution replay",
+      "prerequisite": "Explicit owned Linux stack/model and coordinated API outage required"
+    },
+    {
+      "test": "live component check: anonymous API resource access is denied (partial T01 only)",
+      "prerequisite": "Deferred: explicit HOMELAB_LIVE_READONLY=1 and enrolled HTTPS origin required"
+    },
+    {
+      "test": "model-free precursor: actual 180s command, killed immutable worker and isolated API outage, same physical launch",
+      "prerequisite": "Requires explicitly allocated isolated API3459 and immutable worker image"
+    },
+    {
+      "test": "owned actual Go controls: lost acknowledgment, disconnected cancellation, deadlines and bounded output",
+      "prerequisite": "Requires explicitly booked isolated TLS fault proxy3469 and immutable worker"
+    }
+  ],
+  "final_commands_combined_seconds": 43.74,
+  "after_tests": {
+    "checked_at": "2026-10-21T06:22:26.546709+00:00",
+    "hash_mode": "exact bytes",
+    "files_compared": 408,
+    "changed_from_cut": [
+      {
+        "path": "tests/integration/helpers/linux-stack.ts",
+        "sha256": "aa103ad442c2356f0ed20ef88ce655b996f5bde961d37c59bdc90eae89bff25b",
+        "cut_sha256": "ae3828363d729f4661aa5915293c8c2408c3eef8b9f2a4e46b703df4d4d96e8c"
+      }
+    ],
+    "missing": [],
+    "lock_sha256": "7d49872b961caa7ff8c7b67bbe5c446d0fe996705c4c0937a533283bbf9157a7"
+  },
+  "historical_initial_before_tests": {
+    "checked_at": "2026-10-21T05:28:59.724495+00:00",
+    "hash_mode": "exact bytes, matching source manifest",
+    "files_compared": 388,
+    "changed_from_cut": [
+      {
+        "path": "deploy/tests/restored-export-drill.py",
+        "sha256": "16db0b55605a369044e6921030bcbeff3bc1144e21800ca1b3bac6979fa0db06",
+        "cut_sha256": "eb3b78643b9ddfb1cbaaf7f0b9a8ff2a1b05ef2c688058b18969bdf6a856b89d"
+      },
+      {
+        "path": "tests/integration/actual-model-command-survival.test.ts",
+        "sha256": "b12cd759ed2fb1c2bbde25e35d7387be656d2deb61a93cd23aad43697a72f008",
+        "cut_sha256": "72cd794eaa65434b12c13cfe9867131fc5b2ee27abbee635859378d65dee81cf"
+      }
+    ],
+    "missing": []
+  },
+  "historical_initial_combined_elapsed_seconds": 26.03,
+  "historical_initial_build_completed_at": "2026-10-21T05:33:21.062559+00:00",
+  "latest_summary": {
+    "source_cut": "core018-paths-securityopt11",
+    "node_tests": 204,
+    "node_passed": 188,
+    "node_failed": 0,
+    "node_skipped": 16,
+    "frontend_passed": 9,
+    "build": "PASS",
+    "combined_seconds": 43.74,
+    "status": "AGGREGATE_PASS_STAGED_BUILD_ONLY"
+  },
+  "staged_images": {
+    "api": "sha256:50d700ceeee39f1c81f68c1fd934b16334f279caf4b964fd14c70cc431a1500a",
+    "worker": "sha256:57c32518bb57faff22e4492f30827f8dfaf7554c5eeca5feffbe14daa7711d29",
+    "proxy": "sha256:ffa993e3fe7ad1dce3c07debe6600431fbc97a3113ee2a102e5d065d25df2468",
+    "production_image_source_files_matched": 237,
+    "deployed": false
+  },
+  "pending_delta": "No pending production delta or local acceptance task. Owner-configured external matrix remains separate; completed temporary fixture services stopped.",
+  "final_display_delta": {
+    "source_cut": "core018-paths-export-securityopt11",
+    "manifest": "docs/integration/source-manifest-core018-paths-export-securityopt11-prebuild.json",
+    "files": 413,
+    "production_change": "Readable export included_paths object rendering only; core/host remain the prior tested cut",
+    "frontend_tests": {
+      "passed": 10,
+      "failed": 0,
+      "skipped": 0,
+      "owner_evidence": "docs/frontend/VERIFICATION.md"
+    },
+    "frontend_typecheck_build": "PASS,13.22 seconds",
+    "whole_repo_typecheck": {
+      "command": "npx --no-install tsc --noEmit",
+      "exit_code": 0,
+      "seconds": 4.28
+    },
+    "broad_rerun": "Not repeated for display-only delta; original188/0/16 preserved under its source cut",
+    "runtime_audit": "PASS:238 production/web/deploy/config/example files match; ledger18,lock,host11 and both readyz match",
+    "images": {
+      "api": "sha256:7fbc79f81bc7ec8b819734ea8949b59b6a0367f630d8ae82da7d11e13dbf319b",
+      "worker": "sha256:b0e86cad504a263005588faf72513b74d9d52cea076154b4158054a3d98f000f",
+      "proxy": "sha256:e12f986366a7505d36cc6c7317919cf0e9d9c8e0656c704dc37643c05e40e249"
+    },
+    "deployed": true
+  },
+  "final_local_acceptance": {
+    "outcome": "PASS",
+    "job_id": "6cc32e92-7393-411b-afb2-ef071a082b9b",
+    "model": "qwen3:4b",
+    "tests": 1,
+    "passed": 1,
+    "failed": 0,
+    "elapsed_seconds": 1197.764,
+    "operation_count": 1,
+    "physical_counter": 1,
+    "numbered_logs": "1..180",
+    "model_file_verifications": 2,
+    "model_artifacts": 2,
+    "dashboard_closed_seconds": 205.169,
+    "closure_scope": "tail of command and all subsequent tools; not entire180-second command",
+    "host_off_downloads": "PASS",
+    "final_reloads": 2,
+    "unique_events": 706,
+    "final_responses": 1,
+    "evidence": "docs/acceptance/actual-t08-qwen4b-production-end.json",
+    "browser_evidence": "docs/frontend/evidence/final-t08-4b-completed-two-reloads.json"
+  },
+  "owner_cleanup": {
+    "outcome": "CONFIRMED",
+    "evidence": "docs/operations/LOCAL_FIXTURE_INVENTORY.md",
+    "preserved": "data,keys,volumes,model cache and both historical unknown lifecycle roots/runtimes/receipts/reservations",
+    "no_prune_or_delete": true
+  }
+}

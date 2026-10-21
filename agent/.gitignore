@@ -1,0 +1,7 @@
+.tools/
+bin/
+*.db
+*.db-shm
+*.db-wal
+*.local.json
+*.pem

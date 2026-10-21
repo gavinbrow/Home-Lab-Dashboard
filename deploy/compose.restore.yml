@@ -1,0 +1,12 @@
+# Compose >=2.24.4. Apply when inspecting the restored API; all egress is removed.
+services:
+  api:
+    networks: !override [internal]
+    environment:
+      RESTORE_MODE: "true"
+      DISPATCH_ENABLED: "false"
+  worker:
+    networks: !override [internal]
+    environment:
+      RESTORE_MODE: "true"
+      DISPATCH_ENABLED: "false"

@@ -1,0 +1,25 @@
+name: local-component-checks
+on: [push, pull_request]
+jobs:
+  typescript:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.22.0'
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - run: npm test
+      # Real homelab integration checks stay explicitly opt-in, never fixture PASS.
+  host-component:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: agent/go.mod
+          cache-dependency-path: agent/go.sum
+      - run: go test ./...
+        working-directory: agent

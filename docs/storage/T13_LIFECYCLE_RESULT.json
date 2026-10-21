@@ -1,0 +1,196 @@
+{
+  "scope": "Manual owner API lifecycle acceptance on retained actual-command project; no model retention claim",
+  "started_at": "2026-10-21T06:03:53.175Z",
+  "outcome": "FAIL",
+  "workspace_id": "21eec5d7-27a7-4d40-8e95-05662cd9a3cf",
+  "machine_id": "223f5d8b-1b83-4a9d-a84c-3d9a2cf220f8",
+  "original_job_id": "5a43a51c-3e97-46ca-97d9-f6ba508e63d1",
+  "original_operation_id": "1cc5a100-2da6-4ede-a64c-1abea9a790c3",
+  "canonical_root": "/tmp/homelab-validation-wave2/sentinel-18a4e2f5-5ad6-4539-9d31-29be4479f80f/project",
+  "model_result": "Original model verification remains separate and was not replayed",
+  "container_image": "node:24.22.0-bookworm-slim@sha256:a5f4366e834695d5f363b920c104953a535d3a9864d1bdf74566a0ebe01daee5",
+  "manual_grant_id": "394cb992-5885-4294-9db4-a1e48fec6a4e",
+  "host_binary_sha256": "8eafe4986ec0e9534a8edc0b24d019c1b6d5588f227de42b086b9548485a9526",
+  "owned_supervisor_pid": 651690,
+  "owned_connection_pid": 651701,
+  "before_binding": {
+    "workspace_id": "21eec5d7-27a7-4d40-8e95-05662cd9a3cf",
+    "approved_root_id": "21eec5d7-27a7-4d40-8e95-05662cd9a3cf",
+    "canonical_root": "/tmp/homelab-validation-wave2/sentinel-18a4e2f5-5ad6-4539-9d31-29be4479f80f/project",
+    "runtime_path": "/workspace/project",
+    "type": "container",
+    "writable": true,
+    "quota_bytes": 67108864,
+    "revision": 1,
+    "state": "active",
+    "environment_id": "2ec720b8-089e-4cd6-8d02-623d498134db",
+    "environment_generation": 1,
+    "image_digest": "node:24.22.0-bookworm-slim@sha256:a5f4366e834695d5f363b920c104953a535d3a9864d1bdf74566a0ebe01daee5",
+    "runtime_id": "c9683b9f288613054b2f2e885994a9423c1ea78b50d1991f6ec4dcacaea47ea9",
+    "policy_revision": 1
+  },
+  "before_container": {
+    "id": "c9683b9f288613054b2f2e885994a9423c1ea78b50d1991f6ec4dcacaea47ea9",
+    "image_id": "sha256:a5f4366e834695d5f363b920c104953a535d3a9864d1bdf74566a0ebe01daee5",
+    "image": "node:24.22.0-bookworm-slim@sha256:a5f4366e834695d5f363b920c104953a535d3a9864d1bdf74566a0ebe01daee5",
+    "labels": {
+      "homelab.machine_id": "223f5d8b-1b83-4a9d-a84c-3d9a2cf220f8",
+      "homelab.workspace_id": "21eec5d7-27a7-4d40-8e95-05662cd9a3cf"
+    },
+    "mounts": [
+      {
+        "source": "/tmp/homelab-validation-wave2/sentinel-18a4e2f5-5ad6-4539-9d31-29be4479f80f/project",
+        "destination": "/workspace/project",
+        "rw": true
+      }
+    ]
+  },
+  "files_before": [
+    {
+      "path": "sentinel-report.txt",
+      "sha256": "26b0477c5b98871ddef886d5b21758394bf8c486efe650f5353a2682ff3bf782",
+      "size_bytes": 70
+    },
+    {
+      "path": "sentinel-binary.bin",
+      "sha256": "40aff2e9d2d8922e47afd4648e6967497158785fbd1da870e7110266bf944880",
+      "size_bytes": 256
+    }
+  ],
+  "artifacts_before": [
+    {
+      "id": "722790b0-49ab-4d8a-ad36-3966eb357ee7",
+      "sha256": "822c14d7fddc04cbcc696b01cd4a8632bb863afcf1162d0ac8cad669335a1345",
+      "size_bytes": 139,
+      "origin": "preexisting diff artifact",
+      "url": "http://127.0.0.1:3019/api/v1/artifacts/722790b0-49ab-4d8a-ad36-3966eb357ee7/download",
+      "downloaded_sha256": "822c14d7fddc04cbcc696b01cd4a8632bb863afcf1162d0ac8cad669335a1345"
+    },
+    {
+      "id": "ba4fb207-2e7b-4c1c-a73d-c58e4237130e",
+      "sha256": "dd722d2627d3e25bcaa72bde5efad0a178538e15df4d5061edcbfb9827faf73e",
+      "size_bytes": 704,
+      "origin": "preexisting diff artifact",
+      "url": "http://127.0.0.1:3019/api/v1/artifacts/ba4fb207-2e7b-4c1c-a73d-c58e4237130e/download",
+      "downloaded_sha256": "dd722d2627d3e25bcaa72bde5efad0a178538e15df4d5061edcbfb9827faf73e"
+    },
+    {
+      "id": "fc613b75-525d-47bc-92b1-ba3b00aebe79",
+      "sha256": "26b0477c5b98871ddef886d5b21758394bf8c486efe650f5353a2682ff3bf782",
+      "size_bytes": 70,
+      "origin": "manual raw artifact, not model-published",
+      "url": "http://127.0.0.1:3019/api/v1/artifacts/fc613b75-525d-47bc-92b1-ba3b00aebe79/download",
+      "downloaded_sha256": "26b0477c5b98871ddef886d5b21758394bf8c486efe650f5353a2682ff3bf782"
+    },
+    {
+      "id": "34dccc81-8951-4f8d-9157-2c9def87abe5",
+      "sha256": "40aff2e9d2d8922e47afd4648e6967497158785fbd1da870e7110266bf944880",
+      "size_bytes": 256,
+      "origin": "manual raw artifact, not model-published",
+      "url": "http://127.0.0.1:3019/api/v1/artifacts/34dccc81-8951-4f8d-9157-2c9def87abe5/download",
+      "downloaded_sha256": "40aff2e9d2d8922e47afd4648e6967497158785fbd1da870e7110266bf944880"
+    }
+  ],
+  "error": "{\"error\":{\"code\":\"host_outcome_unknown\",\"message\":\"Host mutation requires reconciliation.\"},\"request_id\":\"req-1q\"}\n\n409 !== 200\n",
+  "host_diagnostic": "",
+  "original_restart_rpc": {
+    "id": "6cb0d40a-d549-4255-88e3-8e32e1252cd0",
+    "state": "responded",
+    "method": "POST",
+    "path": "/v1/workspaces/21eec5d7-27a7-4d40-8e95-05662cd9a3cf/environment/restart",
+    "body": {
+      "grant_id": "394cb992-5885-4294-9db4-a1e48fec6a4e",
+      "operation_id": "6cb0d40a-d549-4255-88e3-8e32e1252cd0",
+      "expected_revision": 1
+    },
+    "request_hash": "5a0d3b9af7e4dd0b54c176d8ebfad62c01599aad87280ce19e9bfada39780a89",
+    "machine_identity_generation": "144738f1-0986-450f-aa4a-7a129da52749",
+    "workspace_guard": {
+      "lock_owner": "environment.restart:33f561a2-f51d-4afa-82b5-ef3cd59eacdd:6cb0d40a-d549-4255-88e3-8e32e1252cd0",
+      "workspace_id": "21eec5d7-27a7-4d40-8e95-05662cd9a3cf",
+      "workspace_revision": 1
+    },
+    "response_status": 200,
+    "response_body": {
+      "error": "environment_isolation_unverified",
+      "state": "outcome_unknown",
+      "reason": "environment_isolation_unverified",
+      "result": {
+        "result": {
+          "status": "",
+          "exit_code": 0
+        },
+        "binding": {
+          "cpus": 1,
+          "type": "container",
+          "state": "active",
+          "revision": 1,
+          "writable": true,
+          "pids_limit": 32,
+          "runtime_id": "c9683b9f288613054b2f2e885994a9423c1ea78b50d1991f6ec4dcacaea47ea9",
+          "quota_bytes": 67108864,
+          "image_digest": "node:24.22.0-bookworm-slim@sha256:a5f4366e834695d5f363b920c104953a535d3a9864d1bdf74566a0ebe01daee5",
+          "memory_bytes": 268435456,
+          "runtime_path": "/workspace/project",
+          "workspace_id": "21eec5d7-27a7-4d40-8e95-05662cd9a3cf",
+          "canonical_root": "/tmp/homelab-validation-wave2/sentinel-18a4e2f5-5ad6-4539-9d31-29be4479f80f/project",
+          "container_user": "10001:10001",
+          "environment_id": "2ec720b8-089e-4cd6-8d02-623d498134db",
+          "policy_revision": 1,
+          "approved_root_id": "21eec5d7-27a7-4d40-8e95-05662cd9a3cf",
+          "environment_generation": 1
+        },
+        "files_preserved": true
+      },
+      "observed_at": "2026-10-21T06:04:00.992546916Z",
+      "operation_id": "6cb0d40a-d549-4255-88e3-8e32e1252cd0"
+    },
+    "created_at": "2026-10-21T06:04:00.490Z"
+  },
+  "unknown_operation_id": "6cb0d40a-d549-4255-88e3-8e32e1252cd0",
+  "api_image": "sha256:27f857e208e17fbc2be5278d8a7a4696f165246ee4d8851fb3791879d94f90d1",
+  "worker_image": "sha256:78f7acf676910cc2001d00b81c73ae2acd30e1ced14bbc5fa6212694a7434743",
+  "post_failure_artifacts_host_offline": [
+    {
+      "id": "722790b0-49ab-4d8a-ad36-3966eb357ee7",
+      "url": "http://127.0.0.1:3019/api/v1/artifacts/722790b0-49ab-4d8a-ad36-3966eb357ee7/download",
+      "status": 200,
+      "sha256": "822c14d7fddc04cbcc696b01cd4a8632bb863afcf1162d0ac8cad669335a1345",
+      "size_bytes": 139,
+      "origin": "preexisting diff artifact"
+    },
+    {
+      "id": "ba4fb207-2e7b-4c1c-a73d-c58e4237130e",
+      "url": "http://127.0.0.1:3019/api/v1/artifacts/ba4fb207-2e7b-4c1c-a73d-c58e4237130e/download",
+      "status": 200,
+      "sha256": "dd722d2627d3e25bcaa72bde5efad0a178538e15df4d5061edcbfb9827faf73e",
+      "size_bytes": 704,
+      "origin": "preexisting diff artifact"
+    },
+    {
+      "id": "fc613b75-525d-47bc-92b1-ba3b00aebe79",
+      "url": "http://127.0.0.1:3019/api/v1/artifacts/fc613b75-525d-47bc-92b1-ba3b00aebe79/download",
+      "status": 200,
+      "sha256": "26b0477c5b98871ddef886d5b21758394bf8c486efe650f5353a2682ff3bf782",
+      "size_bytes": 70,
+      "origin": "manual raw artifact, not model-published"
+    },
+    {
+      "id": "34dccc81-8951-4f8d-9157-2c9def87abe5",
+      "url": "http://127.0.0.1:3019/api/v1/artifacts/34dccc81-8951-4f8d-9157-2c9def87abe5/download",
+      "status": 200,
+      "sha256": "40aff2e9d2d8922e47afd4648e6967497158785fbd1da870e7110266bf944880",
+      "size_bytes": 256,
+      "origin": "manual raw artifact, not model-published"
+    }
+  ],
+  "read_only_diagnosis": {
+    "docker_security_opt": [
+      "no-new-privileges:true"
+    ],
+    "verifier_expected_exact": "no-new-privileges",
+    "runtime_started_at": "2026-10-21T05:26:32.453502557Z",
+    "runtime_running": true,
+    "classification": "Suspected generic preflight verifier false rejection; original unknown receipt/reservation unchanged, no lifecycle PASS claimed"
+  }
+}

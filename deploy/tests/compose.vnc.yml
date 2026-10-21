@@ -1,0 +1,15 @@
+services:
+  fixture-vnc:
+    image: homelab-vnc-fixture:wave2
+    build:
+      context: ..
+      dockerfile: deploy/tests/Dockerfile.vnc
+    profiles: [desktop-proof]
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    tmpfs: ["/tmp:size=64m,mode=1777"]
+    networks: [desktop]
+    cpus: 1
+    mem_limit: 256m
+    pids_limit: 128

@@ -1,0 +1,13 @@
+{
+  "component_check_only": true,
+  "recorded_at": "2026-10-20",
+  "os": "windows",
+  "platform": "Microsoft Windows 11 Pro",
+  "platform_version": "26H2",
+  "logical_cores": 32,
+  "metric_count": 38,
+  "available_count": 23,
+  "unavailable_count": 15,
+  "onboarding_verified": false,
+  "reference_accuracy_verified": false
+}

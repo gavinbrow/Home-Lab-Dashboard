@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-21",
+  "windows_os_boot_guid_query_stable": true,
+  "linux_kernel_boot_uuid_query_stable": true,
+  "supervisor_legacy_and_missing_boot_matrix_passed_windows_linux": true,
+  "native_terminal_strong_boot_validation_passed_windows_linux": true,
+  "actual_linux_restricted_process_running_during_legacy_boot_checks": true,
+  "actual_linux_identity_verified": true,
+  "actual_linux_writer_reservation_retained_until_verified_cancel": true,
+  "host_clock_modified": false,
+  "accounts_or_installed_services_created": false,
+  "actual_reboot_performed": false,
+  "windows_restricted_process_runtime_tested": false,
+  "temporary_linux_unit_remaining": false,
+  "linux_binary_sha256": "8eafe4986ec0e9534a8edc0b24d019c1b6d5588f227de42b086b9548485a9526",
+  "windows_binary_sha256": "e0ef551b68598d20b09c044ab8e359136b860d9e45e64547c9b3206985ce6992"
+}

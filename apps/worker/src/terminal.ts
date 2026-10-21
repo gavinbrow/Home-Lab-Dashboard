@@ -1,0 +1,70 @@
+import {accountOutput} from './output.js';
+import type {AgentBroker} from '@homelab/transport';
+import {HostRpcError} from '@homelab/transport';
+import type {ExecutionContext,PolicyGrant} from '@homelab/contracts';
+import {transaction,assertOwnedLease} from './database.js';
+import {digest} from './hash.js';
+import {assertCurrentGrant,resolveProfile,expectedMachineGeneration} from './authority.js';
+import {appendEventInTransaction} from './queue.js';
+import type {JobHandler} from './runtime.js';
+import type {createOperationExecutor,OperationDependencies} from './operations.js';
+import {verifyConfigured} from './verification.js';
+const pause=(signal:AbortSignal)=>new Promise<void>(resolve=>{const done=()=>{clearTimeout(timer);signal.removeEventListener('abort',done);resolve();},timer=setTimeout(done,1000);signal.addEventListener('abort',done,{once:true});if(signal.aborted)done();});
+/** The host owns the PTY and its bounded spool. The queue owns the writer for the entire process lifetime. */
+export function createTerminalHandler(deps:OperationDependencies&{operations:ReturnType<typeof createOperationExecutor>}):JobHandler{return async(job,runtime)=>{
+ const context=job.payload.execution_context as ExecutionContext,grant=job.payload.grant as PolicyGrant;
+ const session=(await runtime.db.query('SELECT * FROM terminal_sessions WHERE job_id=$1',[job.id])).rows[0];if(!session)throw new Error('terminal_record_missing');
+ const sessionActive=async()=>!!(await runtime.db.query('SELECT id FROM sessions WHERE id=$1 AND user_id=$2 AND revoked_at IS NULL AND expires_at>now()',[session.auth_session_id,job.requester_id])).rowCount;
+ const options=()=>({expectedMachineGeneration:expectedMachineGeneration(job,context.execution_machine_id!),ownerId:job.requester_id,signal:runtime.signal,timeoutMs:2500,scopeGrantId:grant.id,scopeTool:'workspace.terminal',jobGuard:{job_id:job.id,fence:job.fence,lease_owner:job.lease_owner??undefined,workspace_id:job.workspace_id}});
+ const save=async(state:string,record?:any)=>transaction(runtime.db,async client=>{await assertOwnedLease(client,job);await client.query("UPDATE terminal_sessions SET state=$2,fence=$3,metadata=metadata||$4::jsonb,ended_at=CASE WHEN $2='exited' THEN COALESCE(ended_at,now()) ELSE ended_at END,updated_at=now() WHERE id=$1",[session.id,state,job.fence,JSON.stringify(record?{host_record:record}:{})]);if(record)await client.query('UPDATE operations SET status=$2,receipt=$3::jsonb,updated_at=now() WHERE id=$1',[session.id,record.state==='exited'?'succeeded':record.state==='outcome_unknown'?'outcome_unknown':record.state==='cancelling'?'cancelling':'running',JSON.stringify(record)]);await appendEventInTransaction(client,job.id,'terminal.state',{terminal_id:session.id,state,...(record?{record}:{})});});
+ let op=(await runtime.db.query('SELECT * FROM operations WHERE id=$1',[session.id])).rows[0];
+ if(job.recovery_only&&(!op||op.status==='preparing')){await runtime.wait('capacity_recovery_only',2);return;}
+ if(!op){
+  if(!await sessionActive()){await save('exited');await runtime.fail('terminal_session_revoked_before_launch');return;}
+  if(await runtime.cancelled()){await save('exited');await runtime.cancel('terminal_cancelled_before_launch');return;}
+  await assertCurrentGrant(runtime.db,job.requester_id,context,'workspace.terminal',grant);await resolveProfile(runtime.db,job.requester_id,context,'workspace.terminal',job.payload.profile_snapshot as any);
+  const request=await deps.operations.prepareCommand(job,runtime,{step_id:'terminal',context,grant,tool:'run_command',mutating:true,command:{executable:'__workspace_terminal__',args:[]}});request.operation_id=session.id;const {fence,dispatch_epoch,request_hash,...semantic}=request;request.request_hash=digest(semantic);
+  await transaction(runtime.db,async client=>{await assertOwnedLease(client,job);await client.query("INSERT INTO operations(id,job_id,step_id,request_hash,request,machine_id,fence,status,replay_class) VALUES($1,$2,'terminal',$3,$4,$5,$6,'preparing','mutating')",[session.id,job.id,request.request_hash,request,context.execution_machine_id,job.fence]);await client.query('UPDATE terminal_sessions SET operation_id=$1,fence=$2 WHERE id=$1',[session.id,job.fence]);});op=(await runtime.db.query('SELECT * FROM operations WHERE id=$1',[session.id])).rows[0];
+ }
+ if(op.status==='preparing'){
+  const before=await deps.checkpoint(job,runtime,`operation:${session.id}:before`);
+  if(await runtime.cancelled()||Date.now()-(job.started_at?.getTime()??Date.now())>=context.limits.wall_time_seconds*1000){await transaction(runtime.db,async client=>{await assertOwnedLease(client,job);await client.query("UPDATE operations SET status='cancelled',outcome=$2 WHERE id=$1",[session.id,{before_checkpoint:before,not_dispatched:true}]);});await save('exited');if(await runtime.cancelled())await runtime.cancel('terminal_cancelled_before_launch');else await runtime.fail('terminal_wall_time_limit_before_launch');return;}
+  if(!await sessionActive()){await transaction(runtime.db,async client=>{await assertOwnedLease(client,job);await client.query("UPDATE operations SET status='cancelled',outcome=$2 WHERE id=$1",[session.id,{before_checkpoint:before,not_dispatched:true}]);});await save('exited');await runtime.fail('terminal_session_revoked_before_launch');return;}
+  await assertCurrentGrant(runtime.db,job.requester_id,context,'workspace.terminal',grant);await resolveProfile(runtime.db,job.requester_id,context,'workspace.terminal',job.payload.profile_snapshot as any);
+  const fresh=await deps.operations.prepareCommand(job,runtime,{step_id:'terminal',context,grant,tool:'run_command',mutating:true,command:{executable:'__workspace_terminal__',args:[]}});fresh.operation_id=session.id;const {fence,dispatch_epoch,request_hash,...semantic}=fresh;fresh.request_hash=digest(semantic);
+  await transaction(runtime.db,async client=>{await assertOwnedLease(client,job);await client.query("UPDATE operations SET status='dispatching',request=$2,request_hash=$3,outcome=$4 WHERE id=$1",[session.id,fresh,fresh.request_hash,{before_checkpoint:before}]);});await save('launching');
+  try{const response=await deps.broker.rpc(context.execution_machine_id!,'POST','/v1/terminals',{request:fresh,cols:job.payload.cols,rows:job.payload.rows,retain_output:job.payload.retain_output===true},{...options(),requestId:session.id});await save((response as any).record?.state??(response as any).state,(response as any).record??response);}catch(error){if(!(error instanceof HostRpcError))throw error;const rpc=(await runtime.db.query('SELECT delivery_count,response_body FROM agent_rpc_requests WHERE id=$1',[session.id])).rows[0];if(!error.outcomeUnknown&&error.statusCode>=400&&error.statusCode<500&&(!rpc||rpc.delivery_count===0)){await transaction(runtime.db,async client=>{await assertOwnedLease(client,job);await client.query("UPDATE operations SET status='rejected',outcome=outcome||$2::jsonb WHERE id=$1",[session.id,JSON.stringify({reason:error.code,never_delivered:true})]);});await save('exited');await runtime.fail(error.code);return;}}
+ }
+ let lastState='',authorityDenied=false,outputCursor=Number(session.metadata?.output_cursor??0),retainedBytes=Number(session.metadata?.retained_output_bytes??0),truncated=Boolean(session.metadata?.output_truncated);
+ while(!runtime.signal.aborted){
+  await runtime.assertLease();
+  let record:any;
+  const auth=(await runtime.db.query('SELECT id FROM sessions WHERE id=$1 AND revoked_at IS NULL AND expires_at>now()',[session.auth_session_id])).rowCount;
+  let revoke=authorityDenied;try{await assertCurrentGrant(runtime.db,job.requester_id,context,'workspace.terminal',grant);await assertCurrentGrant(runtime.db,job.requester_id,context,'run_command',grant);await resolveProfile(runtime.db,job.requester_id,context,'workspace.terminal',job.payload.profile_snapshot as any);await resolveProfile(runtime.db,job.requester_id,context,'run_command',job.payload.profile_snapshot as any);}catch{revoke=true;}
+  const drain=!auth||revoke||await runtime.cancelled()||Date.now()-(job.started_at?.getTime()??Date.now())>=context.limits.wall_time_seconds*1000;
+  try{const response:any=drain?await deps.broker.rpc(context.execution_machine_id!,'POST',`/v1/terminals/${session.id}/cancel`,{fence:Number(job.fence),dispatch_epoch:job.dispatch_epoch},{...options(),safetyCancellation:true}):await deps.broker.rpc(context.execution_machine_id!,'GET',`/v1/terminals/${session.id}?after=${outputCursor}&max=65536`,null,options());record=response.record??response;
+   if(!drain&&response.data!==undefined){if(typeof response.data!=='string'||response.data.length>87384)throw new Error('invalid_terminal_spool');const bytes=Buffer.from(response.data,'base64');if(!Number.isSafeInteger(response.offset)||!Number.isSafeInteger(response.next_offset)||response.offset<0||response.next_offset-response.offset!==bytes.length||bytes.length>65536)throw new Error('invalid_terminal_spool');
+    if(response.next_offset>outputCursor||response.truncated){let retained:Buffer=Buffer.alloc(0),gap=response.truncated===true;
+     await transaction(runtime.db,async client=>{await assertOwnedLease(client,job);
+      try{if(!(await client.query('SELECT id FROM sessions WHERE id=$1 AND user_id=$2 AND revoked_at IS NULL AND expires_at>now() FOR SHARE',[session.auth_session_id,job.requester_id])).rowCount)throw new Error('session_revoked');for(const tool of ['workspace.terminal','run_command']){await assertCurrentGrant(client,job.requester_id,context,tool,grant);await resolveProfile(client,job.requester_id,context,tool,job.payload.profile_snapshot as any);}if(context.profile_id){const latest=(await client.query('SELECT r.definition FROM agent_profiles p JOIN agent_profile_revisions r ON r.profile_id=p.id AND r.revision=p.current_revision WHERE p.id=$1',[context.profile_id])).rows[0]?.definition;const captured=(job.payload.profile_snapshot as any)?.network_policy;if(latest?.network_policy?.mode!=='runtime_default'&&latest?.network_policy&&(captured?.mode!==latest.network_policy.mode||captured?.allowed_hosts?.some((host:string)=>!latest.network_policy.allowed_hosts.includes(host))))throw new Error('profile_network_reduced');}}catch{throw new Error('terminal_publication_denied');}
+      if(job.payload.retain_output===true){const output=await accountOutput(client,job,`terminal:${session.id}:spool:${response.offset}:${response.next_offset}`,'terminal_transcript',bytes,'truncate');retained=output.bytes;}gap ||=retained.length<bytes.length;
+      if(retained.length)await appendEventInTransaction(client,job.id,'terminal.output',{terminal_id:session.id,data:retained.toString('base64'),offset:response.offset,next_offset:response.offset+retained.length,truncated:response.truncated===true});if(gap&&!truncated)await appendEventInTransaction(client,job.id,'terminal.output.gap',{terminal_id:session.id,reason:job.payload.retain_output===true?'retained_output_limit':'transcript_not_enabled',from_offset:response.offset+retained.length,raw_input_audited:false});await client.query("UPDATE terminal_sessions SET metadata=metadata||$2::jsonb WHERE id=$1",[session.id,JSON.stringify({output_cursor:response.next_offset,retained_output_bytes:retainedBytes+retained.length,transcript_enabled:job.payload.retain_output===true,output_truncated:truncated||gap})]);});retainedBytes+=retained.length;truncated ||=gap;outputCursor=response.next_offset;}
+   }
+  }catch(error){if(error instanceof Error&&error.message==='terminal_publication_denied')authorityDenied=true;else if(error instanceof HostRpcError){if(error.statusCode===403&&!drain)authorityDenied=true;}else throw error;await pause(runtime.signal);continue;}
+  if(record.id!==session.id)throw new Error('terminal_receipt_identity_mismatch');
+  if(record.state!==lastState){await save(record.state,record);lastState=record.state;}
+  if(record.state==='outcome_unknown'){await runtime.interrupt('terminal_process_outcome_unknown');return;}
+  if(record.state==='exited'){
+   if(!drain&&Number.isSafeInteger(record.output_offset)&&outputCursor<record.output_offset)continue;
+   const verification=await verifyConfigured(job,drain?{...runtime,cancelled:async()=>true}:runtime,deps.operations);if(verification.state==='pending'){await runtime.wait(verification.reason,2);return;}if(verification.state==='unknown'){await runtime.interrupt(verification.reason);return;}
+   if(!auth||revoke){await runtime.appendEvent('checkpoint.unavailable',{terminal_id:session.id,phase:'after',reason:'authority_revoked',host_exit_confirmed:true});await runtime.fail(!auth?'terminal_session_revoked':'terminal_authority_revoked',{terminal_id:session.id,exit_confirmed:true,after_checkpoint_status:'unavailable_authority_revoked',verification_status:'not_run'});return;}
+   const after=await deps.checkpoint(job,runtime,`operation:${session.id}:after`);const before=(await runtime.db.query('SELECT outcome FROM operations WHERE id=$1',[session.id])).rows[0]?.outcome?.before_checkpoint;
+   const changes=before&&deps.publishChanges?await deps.publishChanges(job,runtime,session.id,before,after):undefined;
+   await transaction(runtime.db,async client=>{await assertOwnedLease(client,job);await client.query("UPDATE operations SET status=$2,outcome=outcome||$3::jsonb WHERE id=$1",[session.id,record.exit_code===0?'succeeded':'failed',JSON.stringify({after_checkpoint:after,file_changes:changes})]);});
+   if(await runtime.cancelled())await runtime.cancel('terminal_exit_confirmed');else if(drain)await runtime.fail(!auth?'terminal_session_revoked':revoke?'terminal_authority_revoked':'terminal_wall_time_limit',{terminal_id:session.id,exit_confirmed:true,file_changes:changes});else if(verification.verification_status==='failed')await runtime.fail(verification.reason??'verification_failed',{terminal_id:session.id,exit_code:record.exit_code,file_changes:changes,...verification});else await runtime.complete({terminal_id:session.id,exit_code:record.exit_code,file_changes:changes,...verification});return;
+  }
+  await pause(runtime.signal);
+ }
+};}
+
+

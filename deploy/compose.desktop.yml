@@ -1,0 +1,41 @@
+# Session-scoped gateway integration. No upstream browser or host port is published.
+services:
+  api:
+    environment:
+      GUACAMOLE_INTERNAL_URL: http://guacamole:8080/guacamole/
+      GUACAMOLE_JSON_KEY_FILE: /run/secrets/guacamole_api_key
+    secrets: [guacamole_api_key]
+    networks: [desktop]
+  guacd:
+    image: guacamole/guacd:1.6.0@sha256:8974eaa9ba32f713daf311e7cc8cd7e4cdfba1edea39eed75524e78ef4b08f4f
+    profiles: [desktop-proof]
+    restart: unless-stopped
+    networks: [desktop, outbound]
+    mem_limit: 512m
+    pids_limit: 256
+  guacamole:
+    image: ${GUACAMOLE_IMAGE:-homelab-guacamole:1.6.0-lease1}
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.guacamole
+    profiles: [desktop-proof]
+    environment:
+      GUACD_HOSTNAME: guacd
+      JSON_ENABLED: "true"
+      GUACAMOLE_HOME: /ops/guacamole-home
+      HOMELAB_SESSION_CHECK_URL: ${GUACAMOLE_SESSION_CHECK_URL:-http://api:3000/internal/remote/desktop-session-check}
+      HOMELAB_JSON_KEY_FILE: /run/secrets/guacamole_gateway_key
+    command: [/bin/sh, /ops/guacamole-entrypoint.sh]
+    secrets: [guacamole_gateway_key]
+    networks: [desktop]
+    depends_on: [guacd]
+    mem_limit: 1g
+    pids_limit: 256
+networks:
+  desktop:
+    internal: true
+secrets:
+  guacamole_api_key:
+    file: ${CONFIG_DIR:?Set CONFIG_DIR}/guacamole-api-key
+  guacamole_gateway_key:
+    file: ${CONFIG_DIR:?Set CONFIG_DIR}/guacamole-gateway-key

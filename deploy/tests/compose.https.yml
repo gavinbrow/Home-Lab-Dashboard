@@ -1,0 +1,13 @@
+# Disposable HTTPS rehearsal only; apply after production base + agent/backup.
+services:
+  api:
+    environment:
+      APP_ORIGIN: https://dashboard.localhost:4449
+      COOKIE_SECURE: "true"
+  worker:
+    environment:
+      APP_ORIGIN: https://dashboard.localhost:4449
+      COOKIE_SECURE: "true"
+  proxy:
+    ports: !override ["127.0.0.1:4449:443"]
+    profiles: !override []

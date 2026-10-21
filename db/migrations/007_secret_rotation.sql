@@ -1,0 +1,2 @@
+ALTER TABLE secrets ADD COLUMN format_version integer NOT NULL DEFAULT 1 CHECK(format_version IN (1,2));
+CREATE TABLE secret_versions(secret_id uuid NOT NULL REFERENCES secrets(id),version integer NOT NULL,ciphertext text NOT NULL,nonce text NOT NULL,tag text NOT NULL,format_version integer NOT NULL CHECK(format_version IN (1,2)),created_at timestamptz NOT NULL DEFAULT now(),PRIMARY KEY(secret_id,version));

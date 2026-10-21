@@ -1,0 +1,382 @@
+{
+  "scope": "Manual fresh owner API lifecycle acceptance; source-copy provenance is separate from primary-model verification/artifact publication",
+  "started_at": "2026-10-21T06:21:27.611Z",
+  "outcome": "PASS",
+  "ids": {
+    "owner": "a685ec4c-5ad8-40cf-b10a-ee49d956520f",
+    "machine": "68f37612-ffb6-4daf-9dd1-029b20e588fb",
+    "workspace": "82d9f6e6-5747-496c-992c-97840f173f66",
+    "project": "b3d15d2b-23eb-4768-960e-84c82d40a3ab",
+    "identity": "a13ba3ef-3c16-449b-b248-0a0e1c297f19",
+    "environment": "7d36ff58-276a-410a-a5bf-6836fd289b14",
+    "grant": "fea0cb87-8a2a-4782-85c0-3ce789affa45"
+  },
+  "api_origin": "http://127.0.0.1:3019",
+  "source": {
+    "canonical_root": "/tmp/homelab-validation-wave2/sentinel-18a4e2f5-5ad6-4539-9d31-29be4479f80f/project",
+    "original_job_id": "5a43a51c-3e97-46ca-97d9-f6ba508e63d1",
+    "original_operation_id": "1cc5a100-2da6-4ede-a64c-1abea9a790c3",
+    "files": [
+      {
+        "path": "sentinel-report.txt",
+        "sha256": "26b0477c5b98871ddef886d5b21758394bf8c486efe650f5353a2682ff3bf782",
+        "size_bytes": 70
+      },
+      {
+        "path": "sentinel-binary.bin",
+        "sha256": "40aff2e9d2d8922e47afd4648e6967497158785fbd1da870e7110266bf944880",
+        "size_bytes": 256
+      }
+    ],
+    "original_unknown_restart_id": "6cb0d40a-d549-4255-88e3-8e32e1252cd0",
+    "original_fixture_mutated": false
+  },
+  "container_image": "node:24.22.0-bookworm-slim@sha256:a5f4366e834695d5f363b920c104953a535d3a9864d1bdf74566a0ebe01daee5",
+  "canonical_root": "/tmp/homelab-validation-wave2/sentinel-f08f115a-596b-422c-935c-4d6f21e82f43/project",
+  "host_directory": "/tmp/homelab-validation-wave2/sentinel-f08f115a-596b-422c-935c-4d6f21e82f43",
+  "host_binary_sha256": "8111acfb7678d09b22e19ff39674a2827a6bdb855800cf098411e751af4f44a1",
+  "machine_identity_generation": "ecc61b1c-a0ae-4220-97df-037336ed4924",
+  "identity_proof": {
+    "root": "/tmp/homelab-validation-wave2/sentinel-f08f115a-596b-422c-935c-4d6f21e82f43/project",
+    "user": "10001:10001",
+    "image": "node:24.22.0-bookworm-slim@sha256:a5f4366e834695d5f363b920c104953a535d3a9864d1bdf74566a0ebe01daee5",
+    "verified": true,
+    "observed_at": "2026-10-21T06:21:33.667367281Z"
+  },
+  "protected_workspace_template": {
+    "id": "82d9f6e6-5747-496c-992c-97840f173f66",
+    "root": "/tmp/homelab-validation-wave2/sentinel-f08f115a-596b-422c-935c-4d6f21e82f43/project",
+    "approved_root_id": "82d9f6e6-5747-496c-992c-97840f173f66",
+    "runtime_path": "/workspace/project",
+    "type": "container",
+    "quota_bytes": 67108864,
+    "revision": 1,
+    "execution_identity_id": "a13ba3ef-3c16-449b-b248-0a0e1c297f19",
+    "environment_id": "7d36ff58-276a-410a-a5bf-6836fd289b14",
+    "environment_generation": 1,
+    "runtime_id": "e86c2be66355880ba288f7ff2d69b843f0a0ac79efaaeb9f21c34352c3b0e685",
+    "environment_command": [
+      "/usr/local/bin/node",
+      "-e",
+      "setInterval(()=>{},1000)"
+    ],
+    "image": "node:24.22.0-bookworm-slim@sha256:a5f4366e834695d5f363b920c104953a535d3a9864d1bdf74566a0ebe01daee5",
+    "user": "10001:10001",
+    "cpus": 1,
+    "memory_bytes": 268435456,
+    "pids_limit": 32,
+    "max_output_bytes": 1048576,
+    "timeout_path": "/usr/bin/timeout",
+    "policy_revision": 1,
+    "grant_ids": [
+      "fea0cb87-8a2a-4782-85c0-3ce789affa45"
+    ],
+    "environment_grant_ids": [
+      "fea0cb87-8a2a-4782-85c0-3ce789affa45"
+    ],
+    "deletion_grant_id": "fea0cb87-8a2a-4782-85c0-3ce789affa45",
+    "writable": true,
+    "container_enabled": true,
+    "native_enabled": false
+  },
+  "signed_binding_preflight": {
+    "cpus": 1,
+    "type": "container",
+    "state": "active",
+    "revision": 1,
+    "writable": true,
+    "pids_limit": 32,
+    "runtime_id": "e86c2be66355880ba288f7ff2d69b843f0a0ac79efaaeb9f21c34352c3b0e685",
+    "quota_bytes": 67108864,
+    "image_digest": "node:24.22.0-bookworm-slim@sha256:a5f4366e834695d5f363b920c104953a535d3a9864d1bdf74566a0ebe01daee5",
+    "memory_bytes": 268435456,
+    "runtime_path": "/workspace/project",
+    "workspace_id": "82d9f6e6-5747-496c-992c-97840f173f66",
+    "canonical_root": "/tmp/homelab-validation-wave2/sentinel-f08f115a-596b-422c-935c-4d6f21e82f43/project",
+    "container_user": "10001:10001",
+    "environment_id": "7d36ff58-276a-410a-a5bf-6836fd289b14",
+    "policy_revision": 1,
+    "approved_root_id": "82d9f6e6-5747-496c-992c-97840f173f66",
+    "environment_generation": 1
+  },
+  "before_container": {
+    "id": "e86c2be66355880ba288f7ff2d69b843f0a0ac79efaaeb9f21c34352c3b0e685",
+    "image_id": "sha256:a5f4366e834695d5f363b920c104953a535d3a9864d1bdf74566a0ebe01daee5",
+    "image": "node:24.22.0-bookworm-slim@sha256:a5f4366e834695d5f363b920c104953a535d3a9864d1bdf74566a0ebe01daee5",
+    "security_opt": [
+      "no-new-privileges:true"
+    ],
+    "started_at": "2026-10-21T06:21:29.472948964Z",
+    "mounts": [
+      {
+        "source": "/tmp/homelab-validation-wave2/sentinel-f08f115a-596b-422c-935c-4d6f21e82f43/project",
+        "destination": "/workspace/project",
+        "rw": true
+      }
+    ]
+  },
+  "phase": "host_final_review_approved",
+  "host_final_review": {
+    "approved": true,
+    "approved_by": "/root/host_agent",
+    "reviewed_at": "2026-10-21T06:23:03.7286628Z",
+    "workspace_id": "82d9f6e6-5747-496c-992c-97840f173f66",
+    "runtime_id": "e86c2be66355880ba288f7ff2d69b843f0a0ac79efaaeb9f21c34352c3b0e685",
+    "canonical_root": "/tmp/homelab-validation-wave2/sentinel-f08f115a-596b-422c-935c-4d6f21e82f43/project",
+    "host_binary_sha256": "8111acfb7678d09b22e19ff39674a2827a6bdb855800cf098411e751af4f44a1",
+    "review": "Actual protected template, signed binding, live Docker policy/identity/mounts/absolute command, local UNIX endpoint, fresh empty operation journals, canonical root ownership and exactly two bounded regular files independently verified read-only."
+  },
+  "before_binding": {
+    "workspace_id": "82d9f6e6-5747-496c-992c-97840f173f66",
+    "approved_root_id": "82d9f6e6-5747-496c-992c-97840f173f66",
+    "canonical_root": "/tmp/homelab-validation-wave2/sentinel-f08f115a-596b-422c-935c-4d6f21e82f43/project",
+    "runtime_path": "/workspace/project",
+    "type": "container",
+    "writable": true,
+    "quota_bytes": 67108864,
+    "revision": 1,
+    "state": "active",
+    "environment_id": "7d36ff58-276a-410a-a5bf-6836fd289b14",
+    "environment_generation": 1,
+    "image_digest": "node:24.22.0-bookworm-slim@sha256:a5f4366e834695d5f363b920c104953a535d3a9864d1bdf74566a0ebe01daee5",
+    "runtime_id": "e86c2be66355880ba288f7ff2d69b843f0a0ac79efaaeb9f21c34352c3b0e685",
+    "policy_revision": 1
+  },
+  "files_before": [
+    {
+      "path": "sentinel-report.txt",
+      "sha256": "26b0477c5b98871ddef886d5b21758394bf8c486efe650f5353a2682ff3bf782",
+      "size_bytes": 70
+    },
+    {
+      "path": "sentinel-binary.bin",
+      "sha256": "40aff2e9d2d8922e47afd4648e6967497158785fbd1da870e7110266bf944880",
+      "size_bytes": 256
+    }
+  ],
+  "artifacts_before": [
+    {
+      "id": "25df0225-763e-47a8-952f-9b3e03e4d4af",
+      "sha256": "26b0477c5b98871ddef886d5b21758394bf8c486efe650f5353a2682ff3bf782",
+      "size_bytes": 70,
+      "origin": "Manually retained copied source bytes; not model-published",
+      "url": "http://127.0.0.1:3019/api/v1/artifacts/25df0225-763e-47a8-952f-9b3e03e4d4af/download",
+      "downloaded_sha256": "26b0477c5b98871ddef886d5b21758394bf8c486efe650f5353a2682ff3bf782"
+    },
+    {
+      "id": "e3204758-2db3-4b57-9faa-dba019e6931e",
+      "sha256": "40aff2e9d2d8922e47afd4648e6967497158785fbd1da870e7110266bf944880",
+      "size_bytes": 256,
+      "origin": "Manually retained copied source bytes; not model-published",
+      "url": "http://127.0.0.1:3019/api/v1/artifacts/e3204758-2db3-4b57-9faa-dba019e6931e/download",
+      "downloaded_sha256": "40aff2e9d2d8922e47afd4648e6967497158785fbd1da870e7110266bf944880"
+    }
+  ],
+  "restart": {
+    "operation_id": "f8598da6-011a-41ee-ac29-bf678d1efeec",
+    "state": "intent_recorded",
+    "response": {
+      "status": 200,
+      "body": {
+        "state": "completed",
+        "result": {
+          "result": {
+            "output": "e86c2be66355880ba288f7ff2d69b843f0a0ac79efaaeb9f21c34352c3b0e685\n",
+            "status": "completed",
+            "exit_code": 0
+          },
+          "binding": {
+            "cpus": 1,
+            "type": "container",
+            "state": "active",
+            "revision": 1,
+            "writable": true,
+            "pids_limit": 32,
+            "runtime_id": "e86c2be66355880ba288f7ff2d69b843f0a0ac79efaaeb9f21c34352c3b0e685",
+            "quota_bytes": 67108864,
+            "image_digest": "node:24.22.0-bookworm-slim@sha256:a5f4366e834695d5f363b920c104953a535d3a9864d1bdf74566a0ebe01daee5",
+            "memory_bytes": 268435456,
+            "runtime_path": "/workspace/project",
+            "workspace_id": "82d9f6e6-5747-496c-992c-97840f173f66",
+            "canonical_root": "/tmp/homelab-validation-wave2/sentinel-f08f115a-596b-422c-935c-4d6f21e82f43/project",
+            "container_user": "10001:10001",
+            "environment_id": "7d36ff58-276a-410a-a5bf-6836fd289b14",
+            "policy_revision": 1,
+            "approved_root_id": "82d9f6e6-5747-496c-992c-97840f173f66",
+            "environment_generation": 1
+          },
+          "files_preserved": true
+        },
+        "observed_at": "2026-10-21T06:23:11.352576141Z",
+        "operation_id": "f8598da6-011a-41ee-ac29-bf678d1efeec",
+        "binding": {
+          "workspace_id": "82d9f6e6-5747-496c-992c-97840f173f66",
+          "approved_root_id": "82d9f6e6-5747-496c-992c-97840f173f66",
+          "canonical_root": "/tmp/homelab-validation-wave2/sentinel-f08f115a-596b-422c-935c-4d6f21e82f43/project",
+          "runtime_path": "/workspace/project",
+          "type": "container",
+          "writable": true,
+          "quota_bytes": 67108864,
+          "revision": 1,
+          "state": "active",
+          "environment_id": "7d36ff58-276a-410a-a5bf-6836fd289b14",
+          "environment_generation": 1,
+          "image_digest": "node:24.22.0-bookworm-slim@sha256:a5f4366e834695d5f363b920c104953a535d3a9864d1bdf74566a0ebe01daee5",
+          "runtime_id": "e86c2be66355880ba288f7ff2d69b843f0a0ac79efaaeb9f21c34352c3b0e685",
+          "policy_revision": 1
+        },
+        "files_preserved": true,
+        "before_checkpoint_id": "b0bc307e-671e-4754-a92d-a885474fcfdb"
+      }
+    }
+  },
+  "rebuild": {
+    "operation_id": "07bdad02-6d13-4e41-98f4-945cc31ec4df",
+    "state": "intent_recorded",
+    "response": {
+      "status": 200,
+      "body": {
+        "state": "completed",
+        "result": {
+          "result": {
+            "output": "homelab-env-ead6b4d3-527f-4ff7-97e9-bd7e8bd947ed\n",
+            "status": "completed",
+            "exit_code": 0
+          },
+          "binding": {
+            "cpus": 1,
+            "type": "container",
+            "state": "active",
+            "revision": 2,
+            "writable": true,
+            "pids_limit": 32,
+            "runtime_id": "24d4bb7741effa6c3c3568e4a9225aa2640b66c3acc8d5fea6fb8d07a2896a18",
+            "quota_bytes": 67108864,
+            "image_digest": "node:24.22.0-bookworm-slim@sha256:a5f4366e834695d5f363b920c104953a535d3a9864d1bdf74566a0ebe01daee5",
+            "memory_bytes": 268435456,
+            "runtime_path": "/workspace/project",
+            "workspace_id": "82d9f6e6-5747-496c-992c-97840f173f66",
+            "canonical_root": "/tmp/homelab-validation-wave2/sentinel-f08f115a-596b-422c-935c-4d6f21e82f43/project",
+            "container_user": "10001:10001",
+            "environment_id": "ead6b4d3-527f-4ff7-97e9-bd7e8bd947ed",
+            "policy_revision": 1,
+            "approved_root_id": "82d9f6e6-5747-496c-992c-97840f173f66",
+            "environment_generation": 2
+          },
+          "files_preserved": true
+        },
+        "observed_at": "2026-10-21T06:23:26.025339525Z",
+        "operation_id": "07bdad02-6d13-4e41-98f4-945cc31ec4df",
+        "binding": {
+          "workspace_id": "82d9f6e6-5747-496c-992c-97840f173f66",
+          "approved_root_id": "82d9f6e6-5747-496c-992c-97840f173f66",
+          "canonical_root": "/tmp/homelab-validation-wave2/sentinel-f08f115a-596b-422c-935c-4d6f21e82f43/project",
+          "runtime_path": "/workspace/project",
+          "type": "container",
+          "writable": true,
+          "quota_bytes": 67108864,
+          "revision": 2,
+          "state": "active",
+          "environment_id": "ead6b4d3-527f-4ff7-97e9-bd7e8bd947ed",
+          "environment_generation": 2,
+          "image_digest": "node:24.22.0-bookworm-slim@sha256:a5f4366e834695d5f363b920c104953a535d3a9864d1bdf74566a0ebe01daee5",
+          "runtime_id": "24d4bb7741effa6c3c3568e4a9225aa2640b66c3acc8d5fea6fb8d07a2896a18",
+          "policy_revision": 1
+        },
+        "files_preserved": true,
+        "before_checkpoint_id": "8c673253-bd2a-4418-be4c-95d3255bde60"
+      }
+    }
+  },
+  "rebuild_replay_same_runtime": true,
+  "after_container": {
+    "id": "24d4bb7741effa6c3c3568e4a9225aa2640b66c3acc8d5fea6fb8d07a2896a18",
+    "image_id": "sha256:a5f4366e834695d5f363b920c104953a535d3a9864d1bdf74566a0ebe01daee5",
+    "image": "node:24.22.0-bookworm-slim@sha256:a5f4366e834695d5f363b920c104953a535d3a9864d1bdf74566a0ebe01daee5",
+    "security_opt": [
+      "no-new-privileges"
+    ],
+    "started_at": "2026-10-21T06:23:30.105268057Z",
+    "mounts": [
+      {
+        "source": "/tmp/homelab-validation-wave2/sentinel-f08f115a-596b-422c-935c-4d6f21e82f43/project",
+        "destination": "/workspace/project",
+        "rw": true
+      }
+    ]
+  },
+  "files_after": [
+    {
+      "path": "sentinel-report.txt",
+      "sha256": "26b0477c5b98871ddef886d5b21758394bf8c486efe650f5353a2682ff3bf782",
+      "size_bytes": 70
+    },
+    {
+      "path": "sentinel-binary.bin",
+      "sha256": "40aff2e9d2d8922e47afd4648e6967497158785fbd1da870e7110266bf944880",
+      "size_bytes": 256
+    }
+  ],
+  "artifacts_after": [
+    {
+      "id": "25df0225-763e-47a8-952f-9b3e03e4d4af",
+      "sha256": "26b0477c5b98871ddef886d5b21758394bf8c486efe650f5353a2682ff3bf782",
+      "size_bytes": 70,
+      "origin": "Manually retained copied source bytes; not model-published",
+      "url": "http://127.0.0.1:3019/api/v1/artifacts/25df0225-763e-47a8-952f-9b3e03e4d4af/download",
+      "downloaded_sha256": "26b0477c5b98871ddef886d5b21758394bf8c486efe650f5353a2682ff3bf782"
+    },
+    {
+      "id": "e3204758-2db3-4b57-9faa-dba019e6931e",
+      "sha256": "40aff2e9d2d8922e47afd4648e6967497158785fbd1da870e7110266bf944880",
+      "size_bytes": 256,
+      "origin": "Manually retained copied source bytes; not model-published",
+      "url": "http://127.0.0.1:3019/api/v1/artifacts/e3204758-2db3-4b57-9faa-dba019e6931e/download",
+      "downloaded_sha256": "40aff2e9d2d8922e47afd4648e6967497158785fbd1da870e7110266bf944880"
+    }
+  ],
+  "artifacts_host_offline": [
+    {
+      "id": "25df0225-763e-47a8-952f-9b3e03e4d4af",
+      "sha256": "26b0477c5b98871ddef886d5b21758394bf8c486efe650f5353a2682ff3bf782",
+      "size_bytes": 70,
+      "origin": "Manually retained copied source bytes; not model-published",
+      "url": "http://127.0.0.1:3019/api/v1/artifacts/25df0225-763e-47a8-952f-9b3e03e4d4af/download",
+      "downloaded_sha256": "26b0477c5b98871ddef886d5b21758394bf8c486efe650f5353a2682ff3bf782"
+    },
+    {
+      "id": "e3204758-2db3-4b57-9faa-dba019e6931e",
+      "sha256": "40aff2e9d2d8922e47afd4648e6967497158785fbd1da870e7110266bf944880",
+      "size_bytes": 256,
+      "origin": "Manually retained copied source bytes; not model-published",
+      "url": "http://127.0.0.1:3019/api/v1/artifacts/e3204758-2db3-4b57-9faa-dba019e6931e/download",
+      "downloaded_sha256": "40aff2e9d2d8922e47afd4648e6967497158785fbd1da870e7110266bf944880"
+    }
+  ],
+  "completed_at": "2026-10-21T06:23:34.730Z",
+  "formal_end": {
+    "workspace_writer_reservations": 0,
+    "active_jobs": 0,
+    "owned_host_processes_stopped": true,
+    "preserved_fixture_root": "/tmp/homelab-validation-wave2/sentinel-f08f115a-596b-422c-935c-4d6f21e82f43/project",
+    "preserved_runtime_id": "24d4bb7741effa6c3c3568e4a9225aa2640b66c3acc8d5fea6fb8d07a2896a18"
+  },
+  "service_cut": {
+    "api_image": "sha256:27f857e208e17fbc2be5278d8a7a4696f165246ee4d8851fb3791879d94f90d1",
+    "worker_image": "sha256:78f7acf676910cc2001d00b81c73ae2acd30e1ced14bbc5fa6212694a7434743",
+    "worker_executed": false,
+    "provenance": "Coordinator/validation immutable cut held API3019 and TLS3459 unchanged throughout the exclusive acceptance window."
+  },
+  "original_unknown_reservations_preserved": [
+    {
+      "workspace_id": "21eec5d7-27a7-4d40-8e95-05662cd9a3cf",
+      "state": "outcome_unknown",
+      "rpc_id": "6cb0d40a-d549-4255-88e3-8e32e1252cd0"
+    },
+    {
+      "workspace_id": "4f211366-ef3e-48e0-ad36-b9d0deb594dd",
+      "state": "outcome_unknown",
+      "rpc_id": "58c8b0a5-acc1-46e5-a8c0-96ef883a60ad"
+    }
+  ]
+}

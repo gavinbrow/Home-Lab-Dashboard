@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "fixture": "Dedicated disposable WSL Linux Docker container; actual HTTP/auth/PG/signed mTLS relay/Go helper",
+  "verified_at": "2026-10-21T03:59:14.982Z",
+  "machine_id": "76d6bbe7-18db-4a62-b932-c41df0b57021",
+  "target_id": "321edc23-2304-4416-9903-7ff8e4ab03f0",
+  "job_id": "6f117b50-bc1c-4e80-b021-404c9b3e5a9c",
+  "container_id": "9bdabe679ecbf38949694b47b5983a7ffc87d89a4ad31af920cc7aa03a0d132c",
+  "image": "node:24.22.0-bookworm-slim@sha256:a5f4366e834695d5f363b920c104953a535d3a9864d1bdf74566a0ebe01daee5",
+  "started_at_before": "2026-10-21T03:58:57.761279508Z",
+  "started_at_after": "2026-10-21T03:59:11.38496631Z",
+  "operations": [
+    {
+      "id": "afaacc0a-eeeb-4c2e-ad95-9d728ff13f73",
+      "step_id": "action_control",
+      "status": "succeeded",
+      "request_hash": "16ca24a0b0e8212698d2b3d3a8195dffac131f7c9716d1dfb84c53cbce3a90c2"
+    },
+    {
+      "id": "cbe244a0-97f8-4a7c-b055-98388283cae4",
+      "step_id": "action_postcondition",
+      "status": "succeeded",
+      "request_hash": "b342baa0014687b66fffd5f56da56f89f431f32f41959b55815508750f18fd1d"
+    }
+  ],
+  "verification": {
+    "status": "passed",
+    "expected": "running",
+    "observed": "running",
+    "operation_id": "cbe244a0-97f8-4a7c-b055-98388283cae4"
+  },
+  "idempotency": "Two concurrent identical HTTP submissions produced one job and dispatch",
+  "credentials": "omitted",
+  "cleanup": "Only newly created test container/processes/config; DB rows retained in dedicated validation stack"
+}

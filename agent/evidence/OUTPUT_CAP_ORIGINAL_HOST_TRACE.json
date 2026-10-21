@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-21",
+  "job_id": "81983447-24d2-4cba-a860-122cac7e42ce",
+  "operation_id": "53945cbd-e759-4f62-98d8-ba0b6aabb31b",
+  "host_binary_sha256": "8111acfb7678d09b22e19ff39674a2827a6bdb855800cf098411e751af4f44a1",
+  "max_output_bytes": 2048,
+  "docker_frames": [
+    {"homelab_log": 1, "producer_bytes": 2048, "truncated": false},
+    {"homelab_log": 1, "producer_bytes": 0, "truncated": true}
+  ],
+  "durable_host_logs": [
+    {"sequence": 1, "stream": "combined", "bytes": 2048, "truncated": false},
+    {"sequence": 2, "stream": "system", "bytes": 30, "truncated": true, "marker": "output_truncated_at_host_quota"}
+  ],
+  "original_receipt_state": "succeeded",
+  "original_receipt_reason": "process_exited",
+  "original_container_exit_code": 0,
+  "host_signal_present": true,
+  "producer_bytes_replaced_or_expanded": false,
+  "inspection_read_only": true,
+  "operation_replayed": false,
+  "workspace_unknown_reservations_changed": false,
+  "raw_producer_content_included": false,
+  "interpretation": "The host retained the bounded producer output and a separate sequenced truncation signal. Successful process exit does not imply complete output. Downstream metadata must survive an exhausted producer-byte budget."
+}

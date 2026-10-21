@@ -1,0 +1,11 @@
+{
+ "machine_id":"REPLACE_ENROLLED_MACHINE_UUID",
+ "control_plane_url":"https://configured-control-plane.example:9443",
+ "server_ca_file":"/etc/homelab-agent/server-ca.pem",
+ "identity_dir":"/var/lib/homelab-agent/identity",
+ "supervisor_url":"http://127.0.0.1:9982",
+ "local_token_file":"/etc/homelab-supervisor/local-token",
+ "data_dir":"/var/lib/homelab-agent/connection",
+ "telemetry_interval_seconds":5,
+ "nvidia_smi":""
+}

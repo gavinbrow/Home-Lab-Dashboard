@@ -1,0 +1,15 @@
+{
+  "database_inventory_evidence": "",
+  "database_inventory_file": "/protected/staging/database-inventory.json",
+  "quiescence_evidence": "",
+  "key_recovery_evidence": "",
+  "software_version_evidence": "",
+  "components": [
+    {"id":"database","kind":"postgres","source":"/protected/staging/database.dump","required":true,"consistent":false,"capture_evidence":""},
+    {"id":"artifacts","kind":"artifacts","source":"/srv/homelab-control/data/artifacts","required":true,"consistent":false,"capture_evidence":""},
+    {"id":"keys","kind":"keys","source":"/srv/homelab-control/config","required":true,"consistent":false,"capture_evidence":""},
+    {"id":"caddy_ca","kind":"ca","source":"/srv/homelab-control/data/caddy-data","required":true,"consistent":false,"capture_evidence":""},
+    {"id":"project_ACTUAL_ID","kind":"project","workspace_id":"ACTUAL_ID","source":"/protected/remote-export/ACTUAL_ID","required":true,"consistent":false,"capture_evidence":""},
+    {"id":"ledger_ACTUAL_HOST","kind":"sqlite","machine_id":"ACTUAL_HOST","source":"/protected/remote-export/ledger.sqlite","required":true,"consistent":false,"capture_evidence":""}
+  ]
+}

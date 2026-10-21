@@ -1,0 +1,31 @@
+{
+  "status": "PASS",
+  "phase": "retained_owner_login",
+  "tls_certificate_validation": "PASS; explicit fixture CA, no system trust modification",
+  "readyz": {
+    "database": true,
+    "schema": true,
+    "artifacts": true,
+    "secret_key": true,
+    "database_role": true
+  },
+  "secure_cookie": true,
+  "csrf_logout": "PASS",
+  "static_app": "PASS",
+  "dispatch": "disabled by default",
+  "scope": "isolated empty-host production deployment fixture",
+  "schema_before": 15,
+  "schema_after": 18,
+  "restricted_migrator": true,
+  "database_owner_CA_persistence": true,
+  "images": [
+    {
+      "container": "/homelab-https-wave3-api-1",
+      "image": "sha256:ccfe50162597c9c279eaa7c5413d1bad3eb3711a3b8cde342540e75f3c522a6a"
+    },
+    {
+      "container": "/homelab-https-wave3-proxy-1",
+      "image": "sha256:af92f1823035884a2ae8439e9654fd129c409c917618212416ce8019ab319a1c"
+    }
+  ]
+}

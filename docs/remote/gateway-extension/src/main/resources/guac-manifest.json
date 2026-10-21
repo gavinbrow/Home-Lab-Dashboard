@@ -1,0 +1,1 @@
+{"guacamoleVersion":"1.6.0","name":"Homelab authoritative desktop session lease","namespace":"homelab-session-lease","listeners":["lab.homelab.SessionLeaseListener"]}

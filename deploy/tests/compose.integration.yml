@@ -1,0 +1,20 @@
+# Isolated disposable integration only. Never use with a production DATA_DIR.
+# Apply AFTER compose.yml and compose.agent.yml. Each fixture needs a separate project/root.
+services:
+  postgres:
+    ports: ["127.0.0.1:${TEST_PG_PORT:-15439}:5432"]
+  api:
+    environment:
+      NODE_ENV: test
+      APP_ORIGIN: http://127.0.0.1:${TEST_API_PORT:-3009}
+      COOKIE_SECURE: "false"
+      DISPATCH_ENABLED: "true"
+    ports: !override ["127.0.0.1:${TEST_API_PORT:-3009}:3000", "127.0.0.1:${TEST_AGENT_PORT:-3449}:3443"]
+  worker:
+    environment:
+      NODE_ENV: test
+      APP_ORIGIN: http://127.0.0.1:${TEST_API_PORT:-3009}
+      COOKIE_SECURE: "false"
+      DISPATCH_ENABLED: "true"
+  proxy:
+    profiles: [fixture-proxy-only]

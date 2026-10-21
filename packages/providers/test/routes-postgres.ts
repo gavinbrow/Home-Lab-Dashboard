@@ -1,0 +1,51 @@
+/** Opt-in route/SQL component test. Uses unique actors in an explicitly supplied test DB. */
+import{Pool}from'pg';
+import{randomBytes,randomUUID}from'node:crypto';
+import assert from'node:assert/strict';
+import Fastify from'fastify';
+import register from'../../../apps/api/src/modules/providers/index.js';
+import{createSecretStore}from'../../../apps/api/src/core/secrets.js';
+import type{ApiContext}from'../../../apps/api/src/core/context.js';
+import{authorize}from'@homelab/policy';
+const connectionString=process.env.HOMELAB_TEST_DATABASE_URL;if(!connectionString)throw new Error('Explicit HOMELAB_TEST_DATABASE_URL required');
+const db=new Pool({connectionString});const owner=randomUUID(),other=randomUUID();const app=Fastify({logger:false});const sentinel='fixture-only-provider-credential';
+app.decorateRequest('actor',null);app.addHook('onRequest',async request=>{request.actor={id:request.headers['x-test-actor']===other?other:owner,role:'owner'};});
+app.setErrorHandler((error,_request,reply)=>{const e=error as Error&{statusCode?:number;code?:string};return reply.code(e.statusCode??400).send({error:{code:e.code??'validation_failed'}});});
+const secrets=createSecretStore(db,randomBytes(32));
+const context={db,secrets,policy:authorize,config:{origin:'http://test.invalid',cookieSecure:false,artifactRoot:'unused-test-fixture',dispatchEnabled:false,restoreMode:true},audit:async(actor:string|null,action:string,target:string|null,outcome:string)=>{await db.query('INSERT INTO audit_events(actor_id,action,target,outcome)VALUES($1,$2,$3,$4)',[actor,action,target,outcome]);}}as ApiContext;
+const input={name:'Fixture provider',adapter:'ollama',endpoint:'http://127.0.0.1:1',routing_classification:'local',config:{allowed_addresses:['127.0.0.1'],allow_private_http:true,timeout_ms:1000},credential:sentinel};
+try{
+  await db.query('INSERT INTO users(id,email,password_hash)VALUES($1,$2,$3),($4,$5,$3)',[owner,`provider-${owner}@example.invalid`,'fixture-disabled-login',other,`provider-${other}@example.invalid`]);
+  await register(app,context);
+  const created=await app.inject({method:'POST',url:'/providers',payload:input});assert.equal(created.statusCode,201);const provider=created.json();assert.equal(provider.credential_configured,true);assert.ok(!created.body.includes(sentinel));assert.equal(provider.credential_ref,undefined);
+  const secretRow=(await db.query('SELECT credential_ref FROM providers WHERE id=$1',[provider.id])).rows[0];assert.equal(await secrets.get(owner,secretRow.credential_ref),sentinel);
+  assert.equal((await app.inject({url:`/providers/${provider.id}`,headers:{'x-test-actor':other}})).statusCode,404);
+  const alias=(await app.inject({method:'POST',url:'/providers',payload:{...input,name:'Alias',endpoint:'http://127.0.0.1:1/v1',credential:undefined}})).json();assert.equal(alias.runtime_pool_id,provider.runtime_pool_id);
+  const pool=await app.inject({method:'PUT',url:`/provider-runtime-pools/${provider.runtime_pool_id}`,payload:{name:'Fixture shared pool',max_concurrency:2,max_queue:7}});assert.equal(pool.statusCode,200);assert.equal(pool.json().max_queue,7);
+  assert.equal((await app.inject({method:'PUT',url:`/provider-runtime-pools/${provider.runtime_pool_id}`,headers:{'x-test-actor':other},payload:{name:'Denied',max_concurrency:4,max_queue:8}})).statusCode,404);
+  const manual=await app.inject({method:'POST',url:`/providers/${provider.id}/models/manual`,payload:{model_id:'fixture-model'}});assert.equal(manual.statusCode,201);
+  assert.equal((await app.inject({method:'PUT',url:`/providers/${provider.id}/favorites`,payload:{model_id:'fixture-model',favorite:true}})).statusCode,200);
+  assert.equal((await app.inject({url:'/models'})).json().items.find((model:any)=>model.provider_id===provider.id).favorite,true);
+  await db.query("UPDATE models SET metadata=$2,observed_at=now()-interval '10 minutes' WHERE provider_id=$1",[provider.id,{catalog:'discovered',digest:'a',server_version:'1'}]);
+  await db.query("INSERT INTO capability_probes(id,owner_id,provider_id,model_id,capability,state,config_revision,evidence)VALUES($1,$2,$3,'fixture-model','tools','tested_pass',1,$4)",[randomUUID(),owner,provider.id,{model_digest:'a',server_version:'1'}]);
+  assert.equal((await app.inject({url:`/providers/${provider.id}/capability-tests`})).json().items[0].validity.valid,true);
+  await db.query("UPDATE models SET metadata=metadata || '{\"digest\":\"b\"}'::jsonb WHERE provider_id=$1",[provider.id]);
+  const stale=(await app.inject({url:`/providers/${provider.id}/capability-tests`})).json().items[0];assert.equal(stale.effective_state,'stale');assert.ok(stale.validity.reasons.includes('model_digest_changed'));
+  await db.query("INSERT INTO model_observations(provider_id,model_id,kind,value,source,observed_at)VALUES($1,'fixture-model','residency',$2,'explicit_protocol_fixture',now()-interval '10 minutes')",[provider.id,{residency:'loaded',config_revision:1}]);
+  const observed=(await app.inject({url:`/providers/${provider.id}/observations`})).json().items[0];assert.equal(observed.stale,true);assert.ok(observed.observed_age_seconds>=599);
+  assert.equal((await app.inject({url:`/providers/${provider.id}/models`})).json().items[0].catalog_stale,true);
+  const activity=(await app.inject({url:`/providers/${provider.id}/activity`})).json();assert.equal(activity.dashboard_reserved_slots,0);assert.equal(activity.provider_active_requests,null);assert.equal(activity.external_activity,'unknown');
+  const invalid=await app.inject({method:'POST',url:'/providers',payload:{...input,config:{...input.config,allowed_addresses:['169.254.169.254']}}});assert.equal(invalid.statusCode,400);
+  process.stdout.write(JSON.stringify({scope:'real PostgreSQL provider routes; injected fixture actors, not session-auth acceptance',outcome:'PASS',checks:['credential_not_returned','actor_ownership','root_v1_shared_pool','pool_limits','manual_model_favorite_persistence','same_config_identity_invalidation','observations_age','catalog_age','ledger_external_unknown','metadata_destination_denied']})+'\n');
+}finally{
+  await app.close();
+  await db.query('DELETE FROM model_favorites WHERE owner_id=ANY($1::uuid[])',[[owner,other]]);
+  await db.query('DELETE FROM capability_probes WHERE owner_id=ANY($1::uuid[])',[[owner,other]]);
+  await db.query('DELETE FROM model_observations WHERE provider_id IN(SELECT id FROM providers WHERE owner_id=ANY($1::uuid[]))',[[owner,other]]);
+  await db.query('DELETE FROM models WHERE provider_id IN(SELECT id FROM providers WHERE owner_id=ANY($1::uuid[]))',[[owner,other]]);
+  await db.query('DELETE FROM providers WHERE owner_id=ANY($1::uuid[])',[[owner,other]]);
+  await db.query('DELETE FROM provider_runtime_pools WHERE owner_id=ANY($1::uuid[])',[[owner,other]]);
+  await db.query('DELETE FROM secrets WHERE owner_id=ANY($1::uuid[])',[[owner,other]]);
+  await db.query('DELETE FROM audit_events WHERE actor_id=ANY($1::uuid[])',[[owner,other]]);
+  await db.query('DELETE FROM users WHERE id=ANY($1::uuid[])',[[owner,other]]);await db.end();
+}

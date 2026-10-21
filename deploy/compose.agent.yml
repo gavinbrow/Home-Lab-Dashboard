@@ -1,0 +1,32 @@
+# Dedicated mTLS agent listener; browser proxy cannot manufacture host identity.
+services:
+  api:
+    environment:
+      DISPATCH_SIGNING_KEY_FILE: /run/secrets/dispatch_private
+      DISPATCH_SIGNING_KEY_ID_FILE: /run/secrets/dispatch_key_id
+      AGENT_TLS_KEY_FILE: /run/secrets/agent_server_key
+      AGENT_TLS_CERT_FILE: /run/secrets/agent_server_cert
+      AGENT_CA_CERT_FILE: /run/secrets/agent_ca_cert
+      AGENT_CA_KEY_FILE: /run/secrets/agent_ca_key
+      AGENT_HOST: 0.0.0.0
+      AGENT_PORT: "3443"
+    secrets: [dispatch_private, dispatch_key_id, agent_server_key, agent_server_cert, agent_ca_cert, agent_ca_key]
+    ports: ["${AGENT_BIND_ADDRESS:-127.0.0.1}:3443:3443"]
+  worker:
+    environment:
+      DISPATCH_SIGNING_KEY_FILE: /run/secrets/dispatch_private
+      DISPATCH_SIGNING_KEY_ID_FILE: /run/secrets/dispatch_key_id
+    secrets: [dispatch_private, dispatch_key_id]
+secrets:
+  dispatch_private:
+    file: ${CONFIG_DIR:?Set CONFIG_DIR}/dispatch-private.pem
+  dispatch_key_id:
+    file: ${CONFIG_DIR:?Set CONFIG_DIR}/dispatch-key-id
+  agent_server_key:
+    file: ${CONFIG_DIR:?Set CONFIG_DIR}/agent-server-key.pem
+  agent_server_cert:
+    file: ${CONFIG_DIR:?Set CONFIG_DIR}/agent-server-cert.pem
+  agent_ca_cert:
+    file: ${CONFIG_DIR:?Set CONFIG_DIR}/agent-ca-cert.pem
+  agent_ca_key:
+    file: ${CONFIG_DIR:?Set CONFIG_DIR}/agent-ca-key.pem

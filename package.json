@@ -1,0 +1,45 @@
+{
+  "name": "homelab-control-dashboard",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "dev:api": "tsx watch apps/api/src/server.ts",
+    "start:api": "tsx apps/api/src/server.ts",
+    "db:migrate": "tsx apps/api/src/core/migrate.ts",
+    "typecheck": "tsc --noEmit && npm run typecheck --workspace @homelab/web",
+    "test": "tsx --test tests/unit/*.test.ts tests/integration/*.test.ts apps/api/src/modules/*/*.test.ts apps/worker/src/*.test.ts packages/*/test/*.test.ts",
+    "test:integration": "tsx --test tests/integration/*.test.ts",
+    "build": "npm run typecheck && npm run build --workspace @homelab/web",
+    "dev:web": "npm run dev --workspace @homelab/web",
+    "start:worker": "tsx apps/worker/src/main.ts",
+    "auth:recover": "tsx apps/api/src/auth/recover.ts",
+    "db:provision": "tsx db/provision.ts"
+  },
+  "dependencies": {
+    "@fastify/cookie": "11.1.3",
+    "fastify": "5.12.7",
+    "pg": "8.23.1",
+    "zod": "4.6.7",
+    "@fastify/websocket": "11.3.4",
+    "ssh2": "1.17.0",
+    "ws": "8.22.0",
+    "@peculiar/x509": "2.2.0",
+    "reflect-metadata": "0.2.2"
+  },
+  "devDependencies": {
+    "@types/node": "22.20.5",
+    "@types/pg": "8.15.6",
+    "tsx": "4.23.15",
+    "typescript": "5.9.3",
+    "@types/ssh2": "1.15.6",
+    "@types/ws": "8.18.2"
+  }
+}

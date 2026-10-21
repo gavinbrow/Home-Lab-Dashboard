@@ -1,0 +1,59 @@
+# An operator chooses the exact repository mount and initializes it using its
+# protected password file. Never point a disposable deployment at production backups.
+services:
+  api:
+    environment:
+      BACKUP_DESTINATIONS_FILE: /run/secrets/backup_destinations
+    secrets: [backup_destinations]
+  worker:
+    environment:
+      BACKUP_DESTINATIONS_FILE: /run/secrets/backup_destinations
+      BACKUP_PYTHON_BINARY: /usr/local/bin/python3
+      PG_DUMP_BINARY: /usr/lib/postgresql/17/bin/pg_dump
+      RESTIC_BINARY: /usr/local/bin/restic
+    secrets:
+      - backup_destinations
+      - backup_repository_password
+      - source: runtime_env
+        target: /backup/keys/runtime.env
+      - source: backup_dispatch_private
+        target: /backup/keys/dispatch-private.pem
+      - source: backup_dispatch_public
+        target: /backup/keys/dispatch-public.pem
+      - source: backup_dispatch_id
+        target: /backup/keys/dispatch-key-id
+      - source: backup_ca_key
+        target: /backup/keys/agent-ca-key.pem
+      - source: backup_ca_cert
+        target: /backup/keys/agent-ca-cert.pem
+      - source: backup_tls_key
+        target: /backup/keys/agent-server-key.pem
+      - source: backup_tls_cert
+        target: /backup/keys/agent-server-cert.pem
+      - source: backup_guac_key
+        target: /backup/keys/guacamole-api-key
+    volumes:
+      - ${DATA_DIR:?Set DATA_DIR}/backup-staging:/data/backup-staging
+      - ${DATA_DIR:?Set DATA_DIR}/caddy-data:/backup/ca:ro
+      - ${BACKUP_REPOSITORY_DIR:?Set explicit BACKUP_REPOSITORY_DIR}:/backup/repository
+secrets:
+  backup_destinations:
+    file: ${CONFIG_DIR:?Set CONFIG_DIR}/backup-destinations.json
+  backup_repository_password:
+    file: ${CONFIG_DIR:?Set CONFIG_DIR}/backup-repository-password
+  backup_dispatch_private:
+    file: ${CONFIG_DIR:?Set CONFIG_DIR}/dispatch-private.pem
+  backup_dispatch_public:
+    file: ${CONFIG_DIR:?Set CONFIG_DIR}/dispatch-public.pem
+  backup_dispatch_id:
+    file: ${CONFIG_DIR:?Set CONFIG_DIR}/dispatch-key-id
+  backup_ca_key:
+    file: ${CONFIG_DIR:?Set CONFIG_DIR}/agent-ca-key.pem
+  backup_ca_cert:
+    file: ${CONFIG_DIR:?Set CONFIG_DIR}/agent-ca-cert.pem
+  backup_tls_key:
+    file: ${CONFIG_DIR:?Set CONFIG_DIR}/agent-server-key.pem
+  backup_tls_cert:
+    file: ${CONFIG_DIR:?Set CONFIG_DIR}/agent-server-cert.pem
+  backup_guac_key:
+    file: ${CONFIG_DIR:?Set CONFIG_DIR}/guacamole-api-key

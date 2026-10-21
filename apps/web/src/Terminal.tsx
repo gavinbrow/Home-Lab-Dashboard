@@ -1,0 +1,12 @@
+import { useEffect, useRef, useState } from 'react';
+import { Terminal as Xterm } from '@xterm/xterm';
+import { FitAddon } from '@xterm/addon-fit';
+import '@xterm/xterm/css/xterm.css';
+import { Notice } from './App';
+import { api } from './api';
+export type TerminalLaunch={id:string;ticket:string;expires_at:string;socket_path:string};
+export function Terminal({launch,machine}:{launch:TerminalLaunch;machine:string}){
+ const container=useRef<HTMLDivElement>(null);const[status,setStatus]=useState('Connecting…');
+ useEffect(()=>{if(!container.current)return;const terminal=new Xterm({convertEol:false,fontFamily:'Consolas, monospace',fontSize:14,theme:{background:'#0c1422'}});const fit=new FitAddon();terminal.loadAddon(fit);terminal.open(container.current);fit.fit();let ready=false;const url=new URL(launch.socket_path,location.origin);url.protocol=location.protocol==='https:'?'wss:':'ws:';const ws=new WebSocket(url);ws.onopen=()=>ws.send(JSON.stringify({type:'attach',ticket:launch.ticket}));ws.onmessage=(message)=>{try{const frame=JSON.parse(message.data);if(frame.type==='ready'){ready=true;setStatus('Connected — interactive SSH');ws.send(JSON.stringify({type:'resize',cols:terminal.cols,rows:terminal.rows}));terminal.focus();}else if(frame.type==='output'){if(frame.encoding==='base64'){terminal.write(Uint8Array.from(atob(frame.data),c=>c.charCodeAt(0)));}else terminal.write(frame.data);}else if(frame.type==='closed'||frame.type==='error'){ready=false;setStatus(frame.reason??frame.message??'Session closed');}}catch{setStatus('Invalid terminal frame; session cannot be trusted.');ws.close();}};ws.onclose=()=>{ready=false;setStatus('Disconnected. Reopen explicitly; a new connection does not replay input.');};ws.onerror=()=>setStatus('Terminal connection failed.');const input=terminal.onData(data=>{if(ready&&ws.readyState===WebSocket.OPEN)ws.send(JSON.stringify({type:'input',data}));});const observer=new ResizeObserver(()=>{fit.fit();if(ready&&ws.readyState===WebSocket.OPEN)ws.send(JSON.stringify({type:'resize',cols:terminal.cols,rows:terminal.rows}));});observer.observe(container.current);return()=>{input.dispose();observer.disconnect();ws.close();terminal.dispose();void api(`/terminals/${launch.id}/revoke`,{method:'POST'}).catch(()=>{});};},[launch]);
+ return <section className="terminal-panel"><h3>{machine} · Human SSH terminal</h3><Notice>{status}</Notice><div ref={container} className="terminal" aria-label={`SSH terminal for ${machine}`}/></section>;
+}

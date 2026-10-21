@@ -1,0 +1,117 @@
+{
+  "scope": "explicit isolated Linux fixtures; no live homelab or separate-device acceptance",
+  "status": "component restore and NEW usable job PASS; overall backup INCOMPLETE same-device",
+  "backup": {
+    "backup_id": "09c85492-9899-41c6-988e-9fb9d5962ad3",
+    "snapshot_id": "516ef8e16da6594ff083f2250c9528f03f96ea6036748981b99942d93a2a7f1a",
+    "source_epoch": "ee25ccf0-c404-48f4-a51d-dbe5fc56978b",
+    "host_ciphertext_sha256": "dde4591c1c4d76f029c891f454f09fd1eed5dfc3d3a27ebe295bc793ae9f442d",
+    "host_ciphertext_size": 35902712,
+    "machine_id": "bce6ed13-1488-4fb7-81d3-0f20d4af4d38",
+    "machine_generation": "90138513-46d0-451c-9186-6208a78960d3",
+    "workspace_id": "9591bfd2-9996-4543-8bf3-9ad059b9d350"
+  },
+  "source_and_restore_schema": 16,
+  "source_and_restored_api_image": "sha256:58b85280ad0a649f3fe089af1fb084bfb6ca8bb5742c77c624a80a4b18a359b8",
+  "source_and_restored_worker_image": "sha256:51aafe61c1dad0432468c240ef6acf01cc4e51cad4b22e27e46602b18f59e3ba",
+  "capture_helper_sha256": "97668cceb608e122714a8ee0be3b4da0b810d4f7507b94fd8166090f9913a29d",
+  "restored_helper_sha256": "c514be01e1084d30e5aeeba153c6770e07620bf71faffca9df770d6f51b911e6",
+  "restored_epoch": "37580c6f-68ec-4296-aa39-b2c403a13b14",
+  "binding_revision": 2,
+  "key_recovery": "real SecretStore decrypt and retained4096-byte BlobStore hash PASS; original keys; fresh DB passwords",
+  "recovery_health": {
+    "status": "PASS",
+    "request_id": "14fd5909-b6fa-4a77-ba02-d3e27234ca75",
+    "machine_id": "bce6ed13-1488-4fb7-81d3-0f20d4af4d38",
+    "epoch": "37580c6f-68ec-4296-aa39-b2c403a13b14",
+    "generation": "90138513-46d0-451c-9186-6208a78960d3",
+    "delivery_count": 1,
+    "health_sha256": "841974dbc8ebaed9b27181b7be249ce3d994d911d69075387b16eb9f97adb886"
+  },
+  "journal_continuity": {
+    "two_actual_signed_captures": "PASS",
+    "external_reader_wal_included": true,
+    "same_live_wal_inodes_before_restart": true,
+    "quick_check": "ok",
+    "six_capture_states_after_cold_restart": {
+      "51af2dd3-e13a-59b2-9a34-b636a70bef9c": "acknowledged",
+      "8e2e4a31-6780-526b-bb53-127dc2ce6728": "acknowledged",
+      "d4aa84b9-4819-5eb5-af93-82ab6552e5e3": "acknowledged",
+      "f400c128-5ea1-5e44-8fca-31a90f7fc01f": "acknowledged",
+      "f42a2573-0b9d-5a33-b4cb-c68c46725c6e": "deleted",
+      "fe4ba44d-10e2-56e6-9b0e-a34472af7be7": "acknowledged"
+    },
+    "operations_replayed": 0
+  },
+  "captured_snapshot_files": [
+    {
+      "path": "project.db",
+      "sha256": "dfabb7c9579f072281bfede80126dcd33ab87fcd5ca9a8fb6e554446b4716306",
+      "bytes": 8192,
+      "consistency": "sqlite_vacuum_into"
+    },
+    {
+      "path": ".gitignore",
+      "sha256": "2548d81cb9db5eebc02fc985435cbfb7d5d54e506fc54e77567a7f98daa3e719",
+      "bytes": 20,
+      "consistency": "file_scan"
+    },
+    {
+      "path": "large-untracked.bin",
+      "sha256": "f47a677f0bb03107649a71473fd6f5ff7b6f19d8e5c9ddd321bb85a5cd7714c3",
+      "bytes": 35651584,
+      "consistency": "file_scan"
+    },
+    {
+      "path": ".hidden",
+      "sha256": "494dc97f703b5f78270202bad62e271578ab71469bb59e14552713bfb192cf8e",
+      "bytes": 17,
+      "consistency": "file_scan"
+    }
+  ],
+  "new_export": {
+    "status": "PASS",
+    "scope": "new actual durable job after explicit isolated host reconciliation",
+    "job_id": "abb2ac66-9b5b-4e5f-9e05-8d75a2a711e2",
+    "artifact_id": "c5a1c024-14f3-4973-8e11-f196bb3f96ce",
+    "sha256": "da02049e0ed5974ae277950e6e73a2a9545ce5112b0971accb32b72e2ef23cae",
+    "zip_integrity": "PASS",
+    "all_restored_project_file_hashes": "PASS",
+    "file_count": 4,
+    "zip_bytes": 35661524,
+    "workspace_id": "9591bfd2-9996-4543-8bf3-9ad059b9d350"
+  },
+  "historical_rpc": {
+    "id": "47489a59-5af9-4952-a40f-7bc280c9d371",
+    "state": "outcome_unknown",
+    "delivery_count": 0,
+    "dispatch_epoch": "0c2369b0-7b45-409a-99c2-cc09b39905cf"
+  },
+  "historical_job": {
+    "id": "4a94bf4c-956c-411e-bb03-2501003ee951",
+    "state": "queued",
+    "dispatch_epoch": "0c2369b0-7b45-409a-99c2-cc09b39905cf"
+  },
+  "native_metadata": {
+    "separate_same_cipher_apply_native_metadata": "PASS",
+    "verified_native_entries": 33,
+    "omissions": [
+      "linux_birth_time",
+      "linux_filesystem_inode_flags"
+    ],
+    "active_clone": "private extraction; execution disabled"
+  },
+  "limits": [
+    "repository remains on same physical device",
+    "source/restored schema16 proof is distinct from final shared018 deployment",
+    "no unresolved physical operations existed in this host fixture; separate restore-fence regression preserves uncertain rows and writer locks",
+    "source project SQLite uses application-consistent VACUUM snapshot; its hash represents captured database bytes"
+  ],
+  "fixture_timing": {
+    "restore_root_created_at": "2026-10-21T05:20:09.995038+00:00",
+    "export_validation_recorded_at": "2026-10-21T05:28:47.398789+00:00",
+    "elapsed_including_manual_coordination_seconds": 517.404,
+    "source_snapshot_age_at_validation_seconds": 686.834,
+    "production_rpo_rto": "UNVERIFIED; same-device fixture only, no global complete backup"
+  }
+}

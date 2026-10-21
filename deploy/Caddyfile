@@ -1,0 +1,27 @@
+{
+  admin off
+}
+{$DASHBOARD_HOST} {
+  tls internal
+  encode zstd gzip
+  header {
+    X-Content-Type-Options nosniff
+    Referrer-Policy same-origin
+    -Server
+  }
+  @api path /api/* /healthz /readyz
+  handle @api {
+    reverse_proxy api:3000 {
+      flush_interval -1
+    }
+  }
+  # No stock Guacamole route. The application gateway remains disabled until proven.
+  handle /guacamole* {
+    respond "Desktop gateway unavailable" 503
+  }
+  handle {
+    root * /srv/web
+    try_files {path} /index.html
+    file_server
+  }
+}

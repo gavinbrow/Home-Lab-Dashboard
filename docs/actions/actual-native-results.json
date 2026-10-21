@@ -1,0 +1,111 @@
+{
+  "schema_version": 1,
+  "verified_at": "2026-10-21T04:45:30.481Z",
+  "fixture": "New dedicated native project under existing nobody65534, no account/security changes or persistent service install",
+  "machine_id": "5fb935c6-460b-4dc1-87bf-f31b3eabb71c",
+  "workspace_id": "8ec3b271-6857-4a78-971d-eb9c47c43f00",
+  "identity_id": "3ef5f3dc-c9f8-46a1-8501-bb95da40ee85",
+  "job_id": "77cf1d13-38b8-458d-baa0-53901b2ecffc",
+  "action_id": "d0495097-1ce9-4035-a63f-2c2a0392da5d",
+  "observed_identity": {
+    "uid": 65534,
+    "gid": 65534,
+    "label": "native-proof",
+    "outside_write_denied": true
+  },
+  "identity_proof": {
+    "identity": "65534",
+    "verified": true,
+    "observed_at": "2026-10-21T04:45:17.920194369Z",
+    "config_digest": "4f44f98ccbcae8e60d3f245ce08096d9192c4785d419d009462475c638984226"
+  },
+  "verification": {
+    "status": "passed",
+    "expected": 0,
+    "observed": 0,
+    "operation_id": "f826f059-b023-4ce9-ab09-323806835877"
+  },
+  "execution_evidence": [
+    {
+      "step_id": "action_command",
+      "operation_id": "71606369-cce1-41d0-b84e-133011fe3cc9",
+      "changed_files": [
+        {
+          "id": "ecaf61ec-c9fe-4937-a0ef-0748b5c1187e",
+          "kind": "added",
+          "path": "result.txt",
+          "details": {
+            "path": "result.txt",
+            "after": {
+              "kind": "file",
+              "mode": 420,
+              "path": "result.txt",
+              "sha256": "7036fc75fd4bb82795638c50ede1d51670dc22d7b839d286868e2d663bb1ba50",
+              "size_bytes": 84
+            },
+            "before": null,
+            "binary": false,
+            "change": "added",
+            "attribution": "recorded_tool",
+            "diff_artifact_id": "e351fbcf-a42c-4c1b-a697-e21c8a8d7872",
+            "observation_scope": "Project files only; this does not establish all system-wide or external effects.",
+            "text_diff_complete": true,
+            "after_checkpoint_id": "59ad1aba-8fa9-434f-a261-92a48f2eb7a3",
+            "before_checkpoint_id": "14ccc048-2368-423d-99a4-b88642c7bef8",
+            "content_classification": "utf8_text"
+          },
+          "after_hash": "7036fc75fd4bb82795638c50ede1d51670dc22d7b839d286868e2d663bb1ba50",
+          "before_hash": null
+        }
+      ],
+      "changes_truncated": false,
+      "changed_file_count": 1,
+      "after_checkpoint_id": "59ad1aba-8fa9-434f-a261-92a48f2eb7a3",
+      "before_checkpoint_id": "14ccc048-2368-423d-99a4-b88642c7bef8"
+    },
+    {
+      "step_id": "action_verification",
+      "operation_id": "f826f059-b023-4ce9-ab09-323806835877",
+      "changed_files": [],
+      "changes_truncated": false,
+      "changed_file_count": 0,
+      "after_checkpoint_id": "113b70fc-297b-48cc-a9cd-4ec48dc718a4",
+      "before_checkpoint_id": "d2f69116-29fd-45d7-9ce9-2864c30cd1a8"
+    }
+  ],
+  "operations": [
+    {
+      "id": "71606369-cce1-41d0-b84e-133011fe3cc9",
+      "step_id": "action_command",
+      "source": {
+        "revision": 1,
+        "action_id": "d0495097-1ce9-4035-a63f-2c2a0392da5d",
+        "definition_hash": "5d1c8df75945d3e1a02de34f33b807aa68c7abeb634bf0890970fd66afdc832d"
+      },
+      "state": "succeeded"
+    },
+    {
+      "id": "f826f059-b023-4ce9-ab09-323806835877",
+      "step_id": "action_verification",
+      "source": {
+        "revision": 1,
+        "action_id": "d0495097-1ce9-4035-a63f-2c2a0392da5d",
+        "definition_hash": "5d1c8df75945d3e1a02de34f33b807aa68c7abeb634bf0890970fd66afdc832d"
+      },
+      "state": "succeeded"
+    }
+  ],
+  "systemd": {
+    "unit": "homelab-actions-control-c03229d1-ff15-4a52-a556-9b898307dd0c.service",
+    "target_id": "1149bd37-b051-47ec-a92c-7f9f60110649",
+    "job_id": "a4d118af-f316-4c10-a456-771dd335dc62",
+    "verification": {
+      "status": "passed",
+      "expected": "running",
+      "observed": "running",
+      "operation_id": "4dc7ee73-1658-4bfc-812c-cf9ccc1c5cc9"
+    }
+  },
+  "credentials": "omitted",
+  "cleanup": "Only own supervisor/connector, transient services and unique directories; dedicated-stack DB evidence retained"
+}

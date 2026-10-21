@@ -1,0 +1,18 @@
+{
+ "machine_id": "REPLACE_ENROLLED_MACHINE_UUID",
+ "dispatch_epoch": "REPLACE_CONTROL_PLANE_EPOCH_UUID",
+ "data_dir": "/var/lib/homelab-supervisor",
+ "listen": "127.0.0.1:9982",
+ "local_token_file": "/etc/homelab-supervisor/local-token",
+ "docker_path": "/usr/bin/docker",
+ "require_signed_rpc": true,
+ "identity_dir": "/var/lib/homelab-agent/identity",
+ "workspaces": [{
+  "id": "REPLACE_WORKSPACE_UUID", "root": "/srv/approved-project/data", "revision": 1,
+  "execution_identity_id": "REPLACE_IDENTITY_UUID", "environment_id": "REPLACE_ENVIRONMENT_UUID",
+  "environment_generation": 1, "image": "REPLACE_IMAGE@sha256:REPLACE_VERIFIED_DIGEST",
+  "user": "10001:10001", "cpus": 1, "memory_bytes": 268435456, "pids_limit": 128,
+  "max_output_bytes": 10485760, "timeout_path": "/usr/bin/timeout", "policy_revision": 1,
+  "grant_ids": ["REPLACE_HOST_APPROVED_GRANT_UUID"], "writable": false, "container_enabled": false
+ }]
+}

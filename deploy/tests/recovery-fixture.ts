@@ -1,0 +1,52 @@
+import assert from 'node:assert/strict';
+import {createHash,randomBytes,randomUUID} from 'node:crypto';
+import {mkdir,readFile,writeFile} from 'node:fs/promises';
+import {Pool} from 'pg';
+import {BlobStore} from '../../packages/storage/src/blobs.js';
+import {createSecretStore,parseMasterKey} from '../../apps/api/src/core/secrets.js';
+if(process.env.HOMELAB_RECOVERY_FIXTURE!=='1')throw new Error('Explicit isolated recovery fixture required');
+const db=new Pool({connectionString:process.env.DATABASE_URL});
+const fixtureRoot=process.env.FIXTURE_ROOT??'/fixture';
+const store=new BlobStore(process.env.ARTIFACT_ROOT??'/data/artifacts');
+const secrets=createSecretStore(db,parseMasterKey(process.env.MASTER_KEY));
+try{
+ if(process.argv[2]==='seed'){
+  await db.query('BEGIN');
+  assert.equal(Number((await db.query('SELECT count(*) FROM users')).rows[0].count),0,'Refusing a populated application database');
+  const ids=Object.fromEntries(['owner','machine','project','workspace','profile','conversation','message','queued_job','completed_job','operation','artifact','checkpoint'].map(key=>[key,randomUUID()]));
+  const bytes=Buffer.from(Array.from({length:4096},(_,i)=>i%256));
+  const blob=await store.put(bytes);const timestamp=new Date().toISOString();
+  await db.query('INSERT INTO users(id,email,password_hash) VALUES($1,$2,$3)',[ids.owner,'recovery-fixture@example.invalid','nonlogin-'+randomBytes(24).toString('hex')]);
+  const secretValue=randomBytes(32).toString('base64');
+  const secretId=await secrets.put(ids.owner,'isolated-drill',secretValue);
+  await db.query('INSERT INTO machines(id,owner_id,name,os) VALUES($1,$2,$3,$4)',[ids.machine,ids.owner,'synthetic-recovery-machine','unknown']);
+  await db.query('INSERT INTO projects(id,owner_id,name,instructions) VALUES($1,$2,$3,$4)',[ids.project,ids.owner,'recovery-project','Retain binary and dotfiles']);
+  await db.query(`INSERT INTO workspaces(id,owner_id,project_id,name,type,machine_id,approved_root_id,canonical_root,runtime_path) VALUES($1,$2,$3,'recovery-workspace','native',$4,'fixture-root','/fixture/project','/fixture/project')`,[ids.workspace,ids.owner,ids.project,ids.machine]);
+  await db.query('INSERT INTO agent_profiles(id,owner_id,name) VALUES($1,$2,$3)',[ids.profile,ids.owner,'recovery-profile']);
+  await db.query(`INSERT INTO agent_profile_revisions(profile_id,revision,instructions,definition) VALUES($1,1,'fixture','{}')`,[ids.profile]);
+  await db.query(`INSERT INTO conversations(id,owner_id,title) VALUES($1,$2,'Recovery fixture')`,[ids.conversation,ids.owner]);
+  await db.query(`INSERT INTO messages(id,conversation_id,role,content,state) VALUES($1,$2,'user',$3,'completed')`,[ids.message,ids.conversation,JSON.stringify({text:'Retained recovery message'})]);
+  for(const [job,state] of [[ids.queued_job,'queued'],[ids.completed_job,'completed']])await db.query(`INSERT INTO jobs(id,requester_id,idempotency_key,request_hash,workspace_id,kind,state,dispatch_epoch) SELECT $1::uuid,$2,$1::text,'fixture',$3,'command',$4,dispatch_epoch FROM runtime_control`,[job,ids.owner,ids.workspace,state]);
+  await db.query(`INSERT INTO operations(id,job_id,step_id,request_hash,request,machine_id,fence,status) VALUES($1,$2,'fixture','fixture','{}',$3,1,'succeeded')`,[ids.operation,ids.completed_job,ids.machine]);
+  await db.query(`INSERT INTO workspace_locks(workspace_id,job_id,lock_owner,state) VALUES($1,$2,'restore-fixture','held')`,[ids.workspace,ids.queued_job]);
+  await db.query(`INSERT INTO artifacts(id,owner_id,workspace_id,job_id,operation_id,relative_path,sha256,size_bytes,mime_type,storage_key) VALUES($1,$2,$3,$4,$5,'output.bin',$6,$7,'application/octet-stream',$6)`,[ids.artifact,ids.owner,ids.workspace,ids.completed_job,ids.operation,blob.hash,blob.size]);
+  await db.query(`INSERT INTO checkpoints(id,workspace_id,manifest,manifest_hash,consistency) VALUES($1,$2,$3,$4,'quiesced-fixture')`,[ids.checkpoint,ids.workspace,JSON.stringify({entries:[{path:'output.bin',sha256:blob.hash}]}),createHash('sha256').update(blob.hash).digest('hex')]);
+  await mkdir(fixtureRoot+'/project',{recursive:true});await mkdir(fixtureRoot+'/host-state',{recursive:true});
+  await writeFile(fixtureRoot+'/project/output.bin',bytes);await writeFile(fixtureRoot+'/project/.instructions','retain me');
+  await writeFile(fixtureRoot+'/host-state/spool.log','fixture completed\n');
+  await writeFile(fixtureRoot+'/fixture.json',JSON.stringify({ids,secret_id:secretId,secret_sha256:createHash('sha256').update(secretValue).digest('hex'),artifact_hash:blob.hash,captured_at:timestamp},null,2));
+  await db.query('COMMIT');
+  console.log(JSON.stringify({seed:'PASS',scope:'synthetic isolated control-plane recovery dataset',artifact_bytes:blob.size}));
+ }else if(process.argv[2]==='check'){
+  const fixture=JSON.parse(await readFile(fixtureRoot+'/fixture.json','utf8'));
+  const value=await secrets.get(fixture.ids.owner,fixture.secret_id);
+  assert.equal(createHash('sha256').update(value).digest('hex'),fixture.secret_sha256);
+  const bytes=await store.get(fixture.artifact_hash);assert.equal(bytes.length,4096);
+  const control=(await db.query('SELECT * FROM runtime_control WHERE singleton')).rows[0];
+  assert.equal(control.dispatch_enabled,false);assert.equal(control.restore_mode,true);
+  assert.equal(Number((await db.query('SELECT count(*) FROM jobs WHERE dispatch_epoch=$1',[control.dispatch_epoch])).rows[0].count),0);
+  assert.equal(Number((await db.query('SELECT count(*) FROM workspace_locks')).rows[0].count),1);
+  assert.equal(Number((await db.query('SELECT count(*) FROM messages')).rows[0].count),1);
+  console.log(JSON.stringify({recovered_secret_cryptographic_use:'PASS',artifact_hash:'PASS',artifact_bytes:bytes.length,dispatch_enabled:false,restore_mode:true,historical_jobs_with_new_epoch:0,retained_writer_locks:1,retained_messages:1}));
+ }else throw new Error('Choose seed or check');
+}catch(error){await db.query('ROLLBACK').catch(()=>{});throw error;}finally{await db.end();}

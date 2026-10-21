@@ -1,0 +1,33 @@
+{
+  "name": "@homelab/worker",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/queue.ts",
+    "./runtime": "./src/runtime.ts",
+    "./authority": "./src/authority.ts"
+  },
+  "scripts": {
+    "dev": "tsx src/main.ts",
+    "start": "tsx src/main.ts",
+    "typecheck": "tsc --noEmit -p ../../tsconfig.json",
+    "test": "tsx --test src/*.test.ts"
+  },
+  "dependencies": {
+    "@homelab/contracts": "0.1.0",
+    "@homelab/policy": "0.1.0",
+    "@homelab/providers": "0.1.0",
+    "@homelab/storage": "0.1.0",
+    "pg": "8.23.1",
+    "zod": "4.6.7",
+    "@homelab/transport": "0.1.0",
+    "@homelab/actions": "0.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "22.20.5",
+    "@types/pg": "8.15.6",
+    "tsx": "4.23.15",
+    "typescript": "5.9.3"
+  }
+}

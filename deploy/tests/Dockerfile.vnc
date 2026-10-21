@@ -1,0 +1,8 @@
+FROM node:24.22.0-bookworm-slim@sha256:a5f4366e834695d5f363b920c104953a535d3a9864d1bdf74566a0ebe01daee5
+# Synthetic local test endpoint only; never part of a production image or host install.
+RUN apt-get update && apt-get install -y --no-install-recommends xvfb x11vnc \
+    && dpkg-query -W > /fixture-package-versions.txt \
+    && rm -rf /var/lib/apt/lists/* \
+    && groupadd -g 10001 fixture && useradd -u 10001 -g 10001 fixture
+USER 10001:10001
+CMD ["/bin/sh", "-c", "Xvfb :99 -screen 0 800x600x24 -nolisten tcp & sleep 1; exec x11vnc -display :99 -forever -shared -nopw -rfbport 5900"]

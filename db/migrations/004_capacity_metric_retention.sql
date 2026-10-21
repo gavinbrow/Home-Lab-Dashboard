@@ -1,0 +1,10 @@
+ALTER TABLE runtime_control ADD COLUMN max_concurrent_jobs integer NOT NULL DEFAULT 4 CHECK(max_concurrent_jobs BETWEEN 1 AND 64);
+ALTER TABLE metric_rollups DROP CONSTRAINT metric_rollups_pkey;
+ALTER TABLE metric_rollups ADD COLUMN boot_id text NOT NULL DEFAULT 'unknown';
+ALTER TABLE metric_rollups ADD COLUMN unit text NOT NULL DEFAULT 'unknown';
+ALTER TABLE metric_rollups ADD COLUMN source text NOT NULL DEFAULT 'legacy_unknown';
+ALTER TABLE metric_rollups ADD COLUMN kind text NOT NULL DEFAULT 'gauge';
+ALTER TABLE metric_rollups ADD COLUMN missing_count integer;
+ALTER TABLE metric_rollups ADD COLUMN last_observed_at timestamptz;
+ALTER TABLE metric_rollups ADD COLUMN last_received_at timestamptz;
+ALTER TABLE metric_rollups ADD PRIMARY KEY(machine_id,boot_id,series,device_id,unit,source,kind,resolution,bucket);

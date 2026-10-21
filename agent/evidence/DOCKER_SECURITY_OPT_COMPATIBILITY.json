@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-21",
+  "original_receipt_state_preserved": "outcome_unknown",
+  "original_error": "environment_isolation_unverified",
+  "original_restart_replayed": false,
+  "original_writer_reservation_released": false,
+  "actual_owned_runtime_started_before_request_and_unchanged": true,
+  "actual_inspect_security_opt": ["no-new-privileges:true"],
+  "accepted_singleton_enabled_forms": ["no-new-privileges", "no-new-privileges:true", "no-new-privileges=true"],
+  "rejects": ["missing", "false", "boolean aliases", "case changes", "whitespace", "malformed suffixes", "prefix lookalikes", "duplicates", "conflicting entries"],
+  "terminal_unconfined_denial_preserved": true,
+  "primary_sources": [
+    "https://docs.docker.com/reference/cli/docker/container/run/",
+    "https://github.com/moby/moby/blob/master/daemon/daemon_unix.go"
+  ],
+  "source_scope": "Docker documents the equals-true form and the bare option; Moby parses colon/equal separators. The candidate deliberately accepts only exact singleton enabled forms, rather than every ParseBool alias.",
+  "actual_serialization_scope": "The retained runtime demonstrated colon-true. Other enabled representations have parser/consumer regression coverage; they are not separate live engine acceptance claims."
+}

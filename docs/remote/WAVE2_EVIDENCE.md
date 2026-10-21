@@ -1,0 +1,34 @@
+# Remote access component evidence
+
+Historical wave2 record, including its explicit test confound and user-requested pause. The user subsequently resumed work; [wave3 evidence](WAVE3_EVIDENCE.md) records the corrected strict proof. The earlier nominal pass is preserved rather than retroactively relabeled.
+
+2026-10-21 UTC. These results concern explicitly isolated local fixtures. No homelab Windows/Linux machine, real desktop account, physical display or external credential was supplied or guessed. They do not establish release acceptance.
+
+## Completed
+
+- Ten local helper/transport tests pass: exact SSH host-key pins and changes; Origin denial; random hashed launch tickets; Guacamole encrypted JSON/HMAC/expiry; active registry closure; actual loopback ssh2 authentication, Unicode/control-byte PTY echo and confirmed resize; SFTP traversal/canonical escape denial; pending JSON authentication cancellation; bounded late handshake cleanup.
+- Real PostgreSQL component integration passes in `gateway.test.ts`: atomic one-use ticket consumption, different-login session denial, active HTTP revoke, active WebSocket logout closure, no upstream secrets in browser responses/URLs, durable database-only restore mode closing active access and denying authenticated internal lease checks, and readiness recovery. With `HOMELAB_LOCAL_PG_URL` pointing at validation's disposable loopback PostgreSQL 18.4 cluster, the ordinary remote test run has eleven passes and one intentionally skipped isolated OpenSSH fixture test.
+- Operations ran the gateway integration against actual PostgreSQL 17.11, Guacamole/guacd 1.6.0 and Xvfb/x11vnc in the isolated `homelab-ops-wave2` Docker project before the authoritative listener was introduced: one pass, no failures, approximately 2.49 seconds. Logs showed guacd user disconnect, zero users, internal VNC disconnect and connection removal; x11vnc showed no remaining client. This is active transport/target disconnection evidence, not a physical-screen sharing test.
+- The actual OpenSSH Linux chroot fixture test passes in `actual-sftp.test.ts`: trusted host-local public-key fingerprint, immutable marker identity, a known host-side outside canary denied inside the jail, random file SHA256 round-trip/cleanup, exclusive overwrite denial, traversal/outside read denial and jail-only listing. Runtime: OpenSSH 9.6p1 Ubuntu-3ubuntu13.20, OpenSSL 3.0.13. The Ubuntu 24.04 base digest is pinned in `test-fixture/Dockerfile`. Test result: one pass, zero failures, approximately 3.36 seconds. A real ssh2 handle-readdir EOF (code 1) interoperability issue was found and corrected during this test.
+- The required Java listener builds successfully against the documented provided Guacamole 1.6.0 extension API. Builder Maven 3.9.9/Temurin 17 image digest: `sha256:f58d59b6273e785ac0a4477f6e9b5ba1d7731c75b906c0f7b34076f1851318cc`. Built artifact: `gateway-extension/target/homelab-session-lease-1.0.0.jar`, SHA256 `d6d9d5ba4af832a6838424076f4beaa8fc54981cf0c7277ec69734df43f839df`. The ignored target directory is reproducibly built, not a source dependency.
+- Independent source review accepted the listener's veto/close semantics, owner/browser-session DB joins, domain-separated HMAC control authentication, fail-closed polling, and durable restore/maintenance gate. Actual installed-listener proof remains separate below.
+
+## Final bounded proof and pause
+
+The listener was installed and Guacamole logs confirmed it loaded with the correct callback/key-file environment. The first actual run failed its five-second heartbeat startup wait. The bounded retry allowed fifteen seconds for JVM/Docker DNS readiness and returned one pass, zero failures in 33.677 seconds against actual PostgreSQL 17.11, Guacamole/guacd 1.6.0 and Xvfb/x11vnc. The run executed ticket/session denial, active HTTP revoke, active WebSocket logout, DB-only restore revocation, an upstream tunnel absent from the API registry, an already-closed late-event veto, the held twenty-second handshake and callback API outage. Actual logs ended with guacd zero users/internal VNC disconnect/connection removal and x11vnc client_count 0.
+
+**The strict greater-than-twenty-second late-orphan proof remains unestablished.** Log review found guacd "User is not responding" during the held-handshake phase: its raw monitor does not acknowledge Guacamole sync, so the target could have ended through Guacamole idle handling before the lease revocation. The nominal test pass is therefore not accepted as evidence for that specific edge. A guard was added to make a future run fail if the target ends before the twenty-second deadline; that guard was not rerun because the user requested pause. On explicit resume, implement monitor sync acknowledgements, prove target liveness beyond twenty seconds, then prove lease-triggered termination independently. The immediate unknown-ID revoke and API-outage phases ran within their five-second bounds, before this idle threshold.
+
+Production launch is implemented and requires a fresh authoritative listener heartbeat; missing/unavailable listener or durable maintenance/restore mode denies launch and closes active access. Source review found no remaining listener authorization blocker, but the delayed-edge empirical gate above is still pending. No actual homelab behavior is certified.
+
+The current building work is paused at the user's request. No additional run or auto-resume was scheduled. Operations owns shutdown of the shared isolated stack, including the remote-owned `homelab-remote-wave2-sftp` fixture; the final driver used `--rm` and exited. No production resource was targeted.
+
+## Observed limitation and remaining external acceptance
+
+An earlier standalone diagnostic assumed a raw server-only Guacamole HTTP tunnel token must immediately produce 404 after disconnect. Actual stock Guacamole instead produced 200 headers and an unfinished response. That exact raw servlet status behavior was not established and is not the gateway's authorization guarantee. The diagnostic was superseded by app-session denial, actual target-disconnect evidence and the authoritative listener tests; upstream UUIDs/tokens remain server-only on internal networks.
+
+Actual configured hosts still need Windows/Linux SSH identity/browser PTY testing, OS account/root enforcement, Windows ACL-mode SFTP support if desired, RDP certificate/account behavior, real network topology and operator-observed desktop keyboard/mouse/resize/reconnect, physical-screen versus remote-session behavior and local-screen locking. The UI and capability APIs retain explicit unverified/degraded states until that evidence exists.
+
+The user requested finishing the currently running proof and then pausing building. No additional remote feature work or autonomous continuation is authorized after that bounded proof is reported.
+
+

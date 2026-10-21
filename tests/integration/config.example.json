@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "deploymentMode": "live",
+  "baseUrl": "https://replace-with-explicitly-enrolled-endpoint.invalid",
+  "allowedOrigin": "https://replace-with-explicitly-enrolled-endpoint.invalid",
+  "inventory": {
+    "controlPlane": null,
+    "linuxMachine": null,
+    "windowsMachine": null,
+    "provider": null,
+    "linuxWorkspace": null,
+    "windowsWorkspace": null,
+    "containerWorkspace": null,
+    "backupDestination": null
+  }
+}

@@ -1,0 +1,11 @@
+import {writeFile}from'node:fs/promises';
+import {offeredTools}from'../../../apps/worker/src/agent.js';
+import {createTransport}from'../src/index.js';
+import {lines,parse}from'../src/stream.js';
+const [endpoint,output]=process.argv.slice(2);if(!endpoint||!output||new URL(endpoint).hostname!=='127.0.0.1')throw new Error('Explicit isolated IPv4 loopback endpoint and output required');
+const tools=offeredTools({tools:['file.read','file.write','artifact.retain']}as any);
+const request={model:'qwen3:0.6b',messages:[{role:'user',content:'Do these three steps using tools: 1. write_file path report.txt content ALPHA42 expected_sha256 null. 2. verify_file path report.txt. 3. publish_artifact path report.txt mime_type text/plain. Then finish. Do not call any other tool.'}],tools,think:false,options:{num_predict:512,temperature:0},stream:true};
+const transport=createTransport({id:'isolated-fixture',revision:1,adapter:'ollama',baseUrl:endpoint,runtimePoolId:'isolated',routing:'local',allowedAddresses:['127.0.0.1'],allowPrivateHttp:true,timeoutMs:120000},async()=>{throw new Error('No secrets allowed');});
+const chunks=[];for await(const line of lines(await transport.request('/api/chat',request)))if(line)chunks.push(parse(line));
+await writeFile(output,JSON.stringify({scope:'fixture-only diagnostic, no tools executed',request,chunks},null,2)+'\n');
+process.stdout.write(JSON.stringify({output,calls:chunks.flatMap(chunk=>chunk.message?.tool_calls??[])})+'\n');

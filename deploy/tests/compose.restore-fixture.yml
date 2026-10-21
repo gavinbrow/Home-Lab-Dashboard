@@ -1,0 +1,18 @@
+# Explicit isolated restore fixture; API has no outbound network or published port.
+# A separate fixed-target TCP fixture supplies loopback access only.
+services:
+  api:
+    environment:
+      NODE_ENV: test
+      APP_ORIGIN: http://127.0.0.1:3013
+      COOKIE_SECURE: "false"
+      DISPATCH_ENABLED: "false"
+      RESTORE_MODE: "true"
+    ports: !override []
+  worker:
+    environment:
+      NODE_ENV: test
+      APP_ORIGIN: http://127.0.0.1:3013
+      COOKIE_SECURE: "false"
+      DISPATCH_ENABLED: "false"
+      RESTORE_MODE: "true"
