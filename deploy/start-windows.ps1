@@ -23,10 +23,20 @@ function DockerEngineReady {
     return ($LASTEXITCODE -eq 0 -and ($kind -join '').Trim() -eq 'linux')
 }
 function Compose { Docker compose --project-name $Project -f (Join-Path $PSScriptRoot 'compose.windows.yml') @args }
+function Read-LocalDashboardJson([string]$Url, [string]$CertificatePath) {
+    $endpoint = [Uri]$Url
+    if ($endpoint.Scheme -ne 'https' -or $endpoint.Host -ne 'localhost') { throw 'Dashboard readiness checks require HTTPS localhost.' }
+    # The private local CA has no public revocation service. Keep CA/hostname
+    # verification; tolerate only unavailable revocation information, not revocation.
+    $body = & curl.exe --ssl-revoke-best-effort --cacert $CertificatePath --noproxy '*' --proto '=https' --fail --silent --show-error --connect-timeout 5 --max-time 20 $Url
+    if ($LASTEXITCODE -ne 0) { throw "Local HTTPS check failed for $($endpoint.AbsolutePath) (curl exit $LASTEXITCODE). Certificate verification remains enabled." }
+    return (($body -join "`n") | ConvertFrom-Json)
+}
 $launchLock = $null
 $ownsLock = $false
 try {
     if (-not (Get-Command docker.exe -ErrorAction SilentlyContinue)) { throw 'Install Docker Desktop for Windows, then double-click start.bat again. https://www.docker.com/products/docker-desktop/' }
+    if (-not (Get-Command curl.exe -ErrorAction SilentlyContinue)) { throw 'Windows curl.exe is required for verified local HTTPS readiness checks. Install current Windows updates, then retry.' }
     if (-not $Project) { $Project = 'homelab-desktop' }
     if ($Project -cnotmatch '^[a-z0-9][a-z0-9_-]{0,62}$') { throw 'Project must contain lowercase letters, numbers, underscores or hyphens.' }
     $launchLock = [Threading.Mutex]::new($false, "Local\HomelabControl-$Project")
@@ -122,15 +132,22 @@ try {
         $previousCA = Get-Content -LiteralPath $trustPath -Raw | ConvertFrom-Json
         if ($previousCA.thumbprint -ne $cert.Thumbprint -or $previousCA.volume -ne $caVolume[0].Name) { throw 'Installation CA identity changed. Review the original persistent CA/data before trusting a replacement.' }
     }
-    if (-not (Test-Path "Cert:\CurrentUser\Root\$($cert.Thumbprint)")) {
-        Write-Host "Trusting this installation's locally generated HTTPS CA for the current Windows user: $($cert.Thumbprint)"
-        Import-Certificate -FilePath $certPath -CertStoreLocation Cert:\CurrentUser\Root | Out-Null
-    }
+    # Use the Windows certificate store directly: a launcher invoked through cmd
+    # can inherit a PowerShell 7 module path that breaks the PS5 Cert: provider.
+    $rootStore = [Security.Cryptography.X509Certificates.X509Store]::new('Root', 'CurrentUser')
+    try {
+        $rootStore.Open([Security.Cryptography.X509Certificates.OpenFlags]::ReadWrite)
+        $trusted = $rootStore.Certificates.Find([Security.Cryptography.X509Certificates.X509FindType]::FindByThumbprint, $cert.Thumbprint, $false)
+        if ($trusted.Count -eq 0) {
+            Write-Host "Trusting this installation's locally generated HTTPS CA for the current Windows user: $($cert.Thumbprint)"
+            $rootStore.Add($cert)
+        }
+    } finally { $rootStore.Close() }
     @{ project = $Project; volume = $caVolume[0].Name; thumbprint = $cert.Thumbprint } | ConvertTo-Json | Set-Content -LiteralPath $trustPath -Encoding UTF8
     $url = "https://localhost:$Port"
-    $ready = Invoke-WebRequest -UseBasicParsing -Uri "$url/readyz" -TimeoutSec 20
-    if ($ready.StatusCode -ne 200) { throw 'HTTPS readiness did not return 200.' }
-    $auth = Invoke-RestMethod -Uri "$url/api/v1/auth/status" -TimeoutSec 20
+    $ready = Read-LocalDashboardJson "$url/readyz" $certPath
+    if ($ready.status -ne 'ready') { throw 'HTTPS readiness did not report ready.' }
+    $auth = Read-LocalDashboardJson "$url/api/v1/auth/status" $certPath
     Write-Host "Ready: $url (production HTTPS; dispatch remains disabled by default)."
     if ($auth.bootstrap_required) {
         Write-Host 'In the dashboard choose First time? Set up owner, then enter your own email and a password of at least 12 characters.'
